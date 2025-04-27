@@ -1,0 +1,14 @@
+[{
+  "_id": {
+    "$oid": "67fe999a81ab555c41719890"
+  },
+  "orderId": {
+    "$oid": "67fe742481ab555c4171980a"
+  },
+  "userId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "reason": "Defective product",
+  "status": "pending",
+  "createdAt": "2024-03-25T15:45:00Z"
+}]

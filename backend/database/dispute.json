@@ -1,0 +1,77 @@
+[{
+  "_id": {
+    "$oid": "67fe9c6181ab555c4171989c"
+  },
+  "orderId": {
+    "$oid": "67fe742481ab555c4171980a"
+  },
+  "raisedBy": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "description": "Sản phẩm lỗi",
+  "status": "under_review",
+  "resolution": "Chưa giải quyết",
+  "updatedAt": {
+    "$date": "2025-04-25T15:49:01.562Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "680bb11fb7a6e418bf4cc6a5"
+  },
+  "orderId": {
+    "$oid": "67fe742481ab555c4171980a"
+  },
+  "raisedBy": {
+    "$oid": "67fe591581ab555c417197c0"
+  },
+  "description": "Hộp hàng bị móp méo, không nguyên vẹn.",
+  "status": "open",
+  "resolution": "",
+  "createdAt": {
+    "$date": "2024-04-25T10:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2024-04-25T10:00:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "680bb11fb7a6e418bf4cc6a6"
+  },
+  "orderId": {
+    "$oid": "67fe742481ab555c4171980a"
+  },
+  "raisedBy": {
+    "$oid": "67ff61102c0202ce24424833"
+  },
+  "description": "Giao thiếu sản phẩm so với đơn đặt hàng.",
+  "status": "under_review",
+  "resolution": "Đã liên hệ người bán để xác minh.",
+  "createdAt": {
+    "$date": "2024-04-24T15:30:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2024-04-24T15:40:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "680bb11fb7a6e418bf4cc6a7"
+  },
+  "orderId": {
+    "$oid": "67fe742481ab555c4171980a"
+  },
+  "raisedBy": {
+    "$oid": "67fe591581ab555c417197bf"
+  },
+  "description": "Sản phẩm không đúng mô tả, cần hoàn tiền.",
+  "status": "resolved",
+  "resolution": "Hoàn tiền 100% cho khách hàng.",
+  "createdAt": {
+    "$date": "2024-04-20T09:10:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2024-04-21T12:00:00.000Z"
+  }
+}]

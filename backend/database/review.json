@@ -1,0 +1,62 @@
+[{
+  "_id": {
+    "$oid": "67fe9b5f81ab555c41719896"
+  },
+  "productId": {
+    "$oid": "67fe6d3281ab555c417197d4"
+  },
+  "reviewerId": {
+    "$oid": "67ff61102c0202ce24424833"
+  },
+  "rating": 5,
+  "comment": "good product",
+  "createdAt": "2024-03-25T15:45:00Z"
+},
+{
+  "_id": {
+    "$oid": "67ffabc781ab555c41719999"
+  },
+  "productId": {
+    "$oid": "67fe6d3281ab555c417197d4"
+  },
+  "reviewerId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "rating": 4,
+  "comment": "Very nice and high quality!",
+  "createdAt": {
+    "$date": "2024-03-28T10:30:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67ffabc781ab555c41719998"
+  },
+  "productId": {
+    "$oid": "67fe6d3281ab555c417197d5"
+  },
+  "reviewerId": {
+    "$oid": "67ff61102c0202ce24424833"
+  },
+  "rating": 3,
+  "comment": "Good but could be cheaper.",
+  "createdAt": {
+    "$date": "2024-04-01T14:00:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "67ffabc781ab555c41719997"
+  },
+  "productId": {
+    "$oid": "67fe6d3281ab555c417197d4"
+  },
+  "reviewerId": {
+    "$oid": "67fe591581ab555c417197bf"
+  },
+  "rating": 5,
+  "comment": "Exceeded expectations!",
+  "createdAt": {
+    "$date": "2024-04-10T09:15:00.000Z"
+  }
+}]

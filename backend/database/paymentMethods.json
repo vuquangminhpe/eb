@@ -1,0 +1,97 @@
+[{
+  "_id": {
+    "$oid": "67fe6dae81ab555c41719800"
+  },
+  "name": "Credit Card",
+  "description": "Visa, MasterCard, American Express, and Discover",
+  "processingFee": 2.5,
+  "currency": [
+    "USD",
+    "EUR",
+    "GBP"
+  ],
+  "status": "Active"
+},
+{
+  "_id": {
+    "$oid": "67fe6dae81ab555c41719801"
+  },
+  "name": "PayPal",
+  "description": "Secure online payments through PayPal account",
+  "processingFee": 3,
+  "currency": [
+    "USD",
+    "EUR",
+    "GBP",
+    "AUD"
+  ],
+  "status": "Active"
+},
+{
+  "_id": {
+    "$oid": "67fe6dae81ab555c41719802"
+  },
+  "name": "Bank Transfer",
+  "description": "Direct bank transfer (ACH, SEPA, SWIFT)",
+  "processingFee": 1.5,
+  "currency": [
+    "USD",
+    "EUR"
+  ],
+  "status": "Active"
+},
+{
+  "_id": {
+    "$oid": "67fe6dae81ab555c41719803"
+  },
+  "name": "Apple Pay",
+  "description": "Fast payments using Apple devices",
+  "processingFee": 2,
+  "currency": [
+    "USD",
+    "EUR",
+    "GBP",
+    "CAD"
+  ],
+  "status": "Active"
+},
+{
+  "_id": {
+    "$oid": "67fe6dae81ab555c41719804"
+  },
+  "name": "Google Pay",
+  "description": "Fast payments using Google Wallet",
+  "processingFee": 2,
+  "currency": [
+    "USD",
+    "EUR",
+    "GBP"
+  ],
+  "status": "Active"
+},
+{
+  "_id": {
+    "$oid": "67fe6dae81ab555c41719805"
+  },
+  "name": "Cryptocurrency",
+  "description": "Bitcoin, Ethereum, and other supported cryptocurrencies",
+  "processingFee": 0,
+  "currency": [
+    "BTC",
+    "ETH",
+    "USDT"
+  ],
+  "status": "Inactive"
+},
+{
+  "_id": {
+    "$oid": "67fe6dae81ab555c41719806"
+  },
+  "name": "Cash on Delivery (COD)",
+  "description": "Pay with cash upon delivery",
+  "processingFee": 0,
+  "currency": [
+    "USD"
+  ],
+  "status": "Active"
+}]

@@ -1,0 +1,381 @@
+[{
+  "_id": {
+    "$oid": "6809173e9040e7d043ce9270"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "content": "còn ạ",
+  "repliedTo": {
+    "$oid": "6809082ed3b61e350751f026"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T16:37:18.554Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T16:37:18.554Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "680917589040e7d043ce9277"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "content": "chào bạn",
+  "repliedTo": {
+    "$oid": "6809082ed3b61e350751f026"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T16:37:44.404Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T16:37:44.404Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "680917729040e7d043ce927e"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bf"
+  },
+  "content": "oke bạn",
+  "repliedTo": {
+    "$oid": "6809082ed3b61e350751f027"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T16:38:10.803Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T16:38:10.803Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68091abb9040e7d043ce92a6"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "content": "bạn có muốn mua không?",
+  "repliedTo": {
+    "$oid": "6809082ed3b61e350751f026"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T16:52:11.891Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T16:52:11.891Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68091d0d9040e7d043ce92e5"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "content": "123",
+  "repliedTo": {
+    "$oid": "6809082ed3b61e350751f026"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T17:02:05.734Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T17:02:05.734Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68091e937473bc547f5a64ac"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "content": "Chào bạn, tôi muốn hỏi thêm về sản phẩm của bạn.",
+  "createdAt": {
+    "$date": "2025-04-21T09:00:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T17:02:05.734Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68091e937473bc547f5a64ad"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "content": "Bạn có thể cung cấp thêm hình ảnh sản phẩm không?",
+  "createdAt": {
+    "$date": "2025-04-21T10:15:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-21T10:15:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68091e937473bc547f5a64ae"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "content": "Tôi đã đặt hàng rồi, vui lòng xác nhận giúp tôi nhé.",
+  "createdAt": {
+    "$date": "2025-04-22T13:45:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-22T13:45:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68091e937473bc547f5a64af"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bf"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "content": "Đơn hàng đã được xử lý chưa bạn?",
+  "createdAt": {
+    "$date": "2025-04-23T08:30:00.000Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T08:30:00.000Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "68091ea99040e7d043ce92ef"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "content": "oke",
+  "repliedTo": {
+    "$oid": "68091e937473bc547f5a64ac"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T17:08:57.387Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T17:08:57.387Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68091faf9040e7d043ce930c"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "content": "alo",
+  "repliedTo": {
+    "$oid": "68091e937473bc547f5a64ae"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T17:13:19.287Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T17:13:19.287Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "680920fb9040e7d043ce931b"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "content": "oke",
+  "repliedTo": {
+    "$oid": "68091e937473bc547f5a64ad"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T17:18:51.286Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T17:18:51.286Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68092a949040e7d043ce9326"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "content": "hello",
+  "repliedTo": {
+    "$oid": "68091e937473bc547f5a64af"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T17:59:48.110Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T17:59:48.110Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68092b0f9040e7d043ce932d"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "content": "hello1",
+  "repliedTo": {
+    "$oid": "68091e937473bc547f5a64af"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T18:01:51.470Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T18:01:51.470Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "68092e2f9040e7d043ce935c"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "content": "bạn ơi",
+  "repliedTo": {
+    "$oid": "68091e937473bc547f5a64ad"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T18:15:11.354Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T18:15:11.354Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "680930399040e7d043ce937f"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bf"
+  },
+  "content": "được rồi bạn ơi",
+  "repliedTo": {
+    "$oid": "68091e937473bc547f5a64af"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T18:23:53.225Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T18:23:53.225Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6809d5071dcb48f37fb8f8ff"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197bf"
+  },
+  "content": "bạn vui lòng đánh giá 5 sao giúp shop nhé <3",
+  "repliedTo": {
+    "$oid": "68091e937473bc547f5a64af"
+  },
+  "createdAt": {
+    "$date": "2025-04-24T06:07:03.492Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-24T06:07:03.492Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "680baebaeea1c04d0d4b03ce"
+  },
+  "senderId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "receiverId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "content": "hi",
+  "repliedTo": {
+    "$oid": "68091e937473bc547f5a64ad"
+  },
+  "createdAt": {
+    "$date": "2025-04-25T15:48:10.637Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-25T15:48:10.637Z"
+  },
+  "__v": 0
+}]

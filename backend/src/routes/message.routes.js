@@ -1,0 +1,11 @@
+const express = require("express");
+const router = express.Router();
+const messageController = require("../controllers/message.controller");
+const { replyToMessage } = require("../controllers/message.controller");
+const { authMiddleware } = require("../middleware/auth.middleware");
+router.post("/", messageController.createMessage);
+router.get("/conversation/:user1/:user2", messageController.getConversation);
+router.get("/inbox/:userId", messageController.getInbox);
+router.get("/sent/:userId", messageController.getSentMessages);
+router.post("/reply", authMiddleware, messageController.replyToMessage);
+module.exports = router;

@@ -1,0 +1,72 @@
+[{
+  "_id": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "username": "user1",
+  "fullname": "John Smiths",
+  "email": "user1@gmail.com",
+  "password": "123123",
+  "role": "seller",
+  "avatarURL": "https://picsum.photos/200",
+  "action": "unlock"
+},
+{
+  "_id": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "username": "user2",
+  "fullname": "Mary Johnson",
+  "email": "user2@gmail.com",
+  "password": "123123",
+  "role": "seller",
+  "avatarURL": "https://picsum.photos/200",
+  "action": "lock"
+},
+{
+  "_id": {
+    "$oid": "67fe591581ab555c417197be"
+  },
+  "username": "user3",
+  "fullname": "David Wilson",
+  "email": "user3@gmail.com",
+  "password": "123123",
+  "role": "seller",
+  "avatarURL": "https://picsum.photos/200",
+  "action": "unlock"
+},
+{
+  "_id": {
+    "$oid": "67fe591581ab555c417197bf"
+  },
+  "username": "user4",
+  "fullname": "Sarah Brown",
+  "email": "user4@gmail.com",
+  "password": "123123",
+  "role": "admin",
+  "avatarURL": "https://picsum.photos/200",
+  "action": "lock"
+},
+{
+  "_id": {
+    "$oid": "67fe591581ab555c417197c0"
+  },
+  "username": "user5",
+  "fullname": "Micheal Davis",
+  "email": "user5@gmail.com",
+  "password": "123123",
+  "role": "admin",
+  "avatarURL": "https://picsum.photos/200",
+  "action": "lock"
+},
+{
+  "_id": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "username": "user6",
+  "fullname": "Cao Linh",
+  "email": "user6@gmail.com",
+  "password": "123123",
+  "role": "admin",
+  "avatarURL": "https://picsum.photos/200",
+  "action": "unlock"
+}]

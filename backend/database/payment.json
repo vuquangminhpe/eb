@@ -1,0 +1,17 @@
+[{
+  "_id": {
+    "$oid": "67fe990581ab555c4171988e"
+  },
+  "orderId": {
+    "$oid": "67fe742481ab555c4171980a"
+  },
+  "userId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "amount": 1000,
+  "method": {
+    "$oid": "67fe6dae81ab555c41719800"
+  },
+  "status": "paid",
+  "paidAt": "2024-03-22T15:45:00Z"
+}]

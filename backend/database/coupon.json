@@ -1,0 +1,13 @@
+[{
+  "_id": {
+    "$oid": "67fe96c181ab555c4171988c"
+  },
+  "code": "123",
+  "discountPercent": 10,
+  "startDate": "2023-01-01",
+  "endDate": "2023-01-31",
+  "maxUsage": 10,
+  "productId": {
+    "$oid": "67fe6d3281ab555c417197d4"
+  }
+}]

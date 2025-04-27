@@ -1,0 +1,51 @@
+# ========================
+# 🌍 Root level
+# ========================
+.env
+.env.*      # .env.development, .env.production
+node_modules/
+dist/
+build/
+.DS_Store
+Thumbs.db
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================
+# 💻 Backend (Node.js)
+# ========================
+/backend/node_modules/
+/backend/.env
+/backend/uploads/
+/backend/logs/
+/backend/coverage/
+/backend/*.log
+
+# ========================
+# 🌐 Frontend (React)
+# ========================
+/frontend/node_modules/
+/frontend/.env
+/frontend/build/
+/frontend/.cache/
+/frontend/.next/
+/frontend/coverage/
+/frontend/public/env.js
+/frontend/*.log
+
+# Vite or CRA specific
+/frontend/.vite/
+/frontend/.parcel-cache/
+/frontend/.turbo/
+
+# ========================
+# 🔧 IDEs & OS
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime*
+*.iml
+.qodo

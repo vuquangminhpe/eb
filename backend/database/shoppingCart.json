@@ -1,0 +1,28 @@
+[
+    {
+        "id": "3e19",
+        "userId": "27b4",
+        "productId": [
+            {
+                "idProduct": "1",
+                "quantity": "1"
+            },
+            {
+                "idProduct": "2",
+                "quantity": "2"
+            }
+        ],
+        "dateAdded": "2025-03-19T15:30:11.598Z"
+    },
+    {
+        "id": "cd5d",
+        "userId": "3",
+        "productId": [
+            {
+                "idProduct": "2",
+                "quantity": "1"
+            }
+        ],
+        "dateAdded": "2025-03-24T15:59:03.745Z"
+    }
+]

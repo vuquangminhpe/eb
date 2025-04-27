@@ -1,0 +1,33 @@
+[{
+  "_id": {
+    "$oid": "67fe9bd881ab555c41719898"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "averageRating": 4.5,
+  "totalReviews": 10,
+  "positiveRate": 0.8
+},
+{
+  "_id": {
+    "$oid": "67fe9bd881ab555c41719899"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "averageRating": 3.8,
+  "totalReviews": 8,
+  "positiveRate": 0.6
+},
+{
+  "_id": {
+    "$oid": "67fe9bd881ab555c4171989a"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  },
+  "averageRating": 4.2,
+  "totalReviews": 12,
+  "positiveRate": 0.7
+}]

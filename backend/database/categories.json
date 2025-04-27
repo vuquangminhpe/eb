@@ -1,0 +1,35 @@
+[{
+  "_id": {
+    "$oid": "67fe5afc81ab555c417197c7"
+  },
+  "name": "Fashion",
+  "description": "Fashion products and accessories"
+},
+{
+  "_id": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "name": "Electronics",
+  "description": "Electronic devices and technology"
+},
+{
+  "_id": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "name": "Home & Kitchen",
+  "description": "Home and kitchen appliances"
+},
+{
+  "_id": {
+    "$oid": "67fe5afc81ab555c417197ca"
+  },
+  "name": "Health & Fitness",
+  "description": "Health care equipment and products"
+},
+{
+  "_id": {
+    "$oid": "67fe5afc81ab555c417197cb"
+  },
+  "name": "Entertainment",
+  "description": "Entertainment and sports products"
+}]

@@ -1,0 +1,90 @@
+[{
+  "_id": {
+    "$oid": "67fe609581ab555c417197cd"
+  },
+  "userId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "fullName": "John Doe",
+  "phone": "+1-555-123-4567",
+  "street": "123 Maple Street",
+  "city": "Los Angeles",
+  "state": "CA",
+  "country": "USA",
+  "isDefault": true
+},
+{
+  "_id": {
+    "$oid": "67fe609581ab555c417197ce"
+  },
+  "userId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "fullName": "John Doe",
+  "phone": "+1-555-123-4567",
+  "street": "456 Oak Avenue",
+  "city": "San Diego",
+  "state": "CA",
+  "country": "USA",
+  "isDefault": false
+},
+{
+  "_id": {
+    "$oid": "67fe609581ab555c417197cf"
+  },
+  "userId": {
+    "$oid": "67fe591581ab555c417197be"
+  },
+  "fullName": "Jane Smith",
+  "phone": "+44 20 7946 0958",
+  "street": "78 High Street",
+  "city": "London",
+  "state": "London",
+  "country": "UK",
+  "isDefault": true
+},
+{
+  "_id": {
+    "$oid": "67fe609581ab555c417197d0"
+  },
+  "userId": {
+    "$oid": "67fe591581ab555c417197bf"
+  },
+  "fullName": "Carlos Martinez",
+  "phone": "+34 600 123 456",
+  "street": "Calle Mayor 15",
+  "city": "Madrid",
+  "state": "Madrid",
+  "country": "Spain",
+  "isDefault": true
+},
+{
+  "_id": {
+    "$oid": "67fe609581ab555c417197d1"
+  },
+  "userId": {
+    "$oid": "67fe591581ab555c417197c0"
+  },
+  "fullName": "Aisha Khan",
+  "phone": "+971 50 123 4567",
+  "street": "Villa 12, Palm Jumeirah",
+  "city": "Dubai",
+  "state": "Dubai",
+  "country": "UAE",
+  "isDefault": true
+},
+{
+  "_id": {
+    "$oid": "67fe609581ab555c417197d2"
+  },
+  "userId": {
+    "$oid": "67fe591581ab555c417197c1"
+  },
+  "fullName": "Cao Linh",
+  "phone": "+84 123 456 7890",
+  "street": "88 Tran Duy Hung",
+  "city": "Hanoi",
+  "state": "Hanoi",
+  "country": "Vietnam",
+  "isDefault": true
+}]

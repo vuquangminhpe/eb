@@ -1,0 +1,652 @@
+[{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197d4"
+  },
+  "title": "Brown Leather Bag",
+  "description": "Handcrafted genuine leather bag with premium stitching and multiple compartments",
+  "price": 2500,
+  "image": "https://picsum.photos/id/7/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c7"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  },
+  "auctionEndTime": "2023-09-30T12:00:00.000Z",
+  "isAuction": true
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197d5"
+  },
+  "title": "Vintage Camera",
+  "description": "Classic film camera with manual focus and exposure controls",
+  "price": 1800,
+  "image": "https://picsum.photos/id/250/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "auctionEndTime": "2023-09-30T12:00:00.000Z",
+  "isAuction": true
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197d6"
+  },
+  "title": "Modern Laptop",
+  "description": "High-performance laptop with sleek design and long battery life",
+  "price": 4500,
+  "image": "https://picsum.photos/id/0/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197d7"
+  },
+  "title": "Wireless Headphones",
+  "description": "Noise-cancelling headphones with premium sound quality",
+  "price": 1200,
+  "image": "https://picsum.photos/id/367/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197d8"
+  },
+  "title": "Ceramic Coffee Mug",
+  "description": "Handmade ceramic mug with artistic design and comfortable handle",
+  "price": 350,
+  "image": "https://picsum.photos/id/30/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197d9"
+  },
+  "title": "Desk Lamp",
+  "description": "Adjustable LED desk lamp with multiple brightness levels",
+  "price": 750,
+  "image": "https://picsum.photos/id/859/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  },
+  "auctionEndTime": "2023-09-30T12:00:00.000Z",
+  "isAuction": true
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197da"
+  },
+  "title": "Fitness Watch",
+  "description": "Smart fitness tracker with heart rate monitor and sleep tracking",
+  "price": 950,
+  "image": "https://picsum.photos/id/719/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197ca"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  },
+  "isAuction": false
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197db"
+  },
+  "title": "Portable Speaker",
+  "description": "Waterproof Bluetooth speaker with 360-degree sound",
+  "price": 880,
+  "image": "https://picsum.photos/id/27/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197cb"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197dc"
+  },
+  "title": "Leather Wallet",
+  "description": "Slim leather wallet with RFID protection and multiple card slots",
+  "price": 450,
+  "image": "https://picsum.photos/id/103/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c7"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197dd"
+  },
+  "title": "Denim Jacket",
+  "description": "Stylish street fashion denim jacket",
+  "price": 1200,
+  "image": "https://picsum.photos/id/365/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c7"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197de"
+  },
+  "title": "Athletic Shoes",
+  "description": "Versatile athletic shoes suitable for running and gym workouts",
+  "price": 1500,
+  "image": "https://picsum.photos/id/21/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197ca"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197df"
+  },
+  "title": "Rice Cooker",
+  "description": "Automatic rice cooker with multiple cooking functions",
+  "price": 1800,
+  "image": "https://picsum.photos/id/292/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e0"
+  },
+  "title": "Yoga Kit",
+  "description": "Complete yoga kit with mat and accessories",
+  "price": 980,
+  "image": "https://picsum.photos/id/437/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197ca"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e1"
+  },
+  "title": "Gaming Mouse",
+  "description": "Ergonomic mouse with customizable RGB lighting and high-precision sensor",
+  "price": 850,
+  "image": "https://picsum.photos/id/128/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e2"
+  },
+  "title": "Wool Scarf",
+  "description": "Soft and warm wool scarf with classic plaid pattern",
+  "price": 700,
+  "image": "https://picsum.photos/id/67/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c7"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e3"
+  },
+  "title": "Tennis Racket",
+  "description": "Professional tennis racket with balanced design",
+  "price": 2200,
+  "image": "https://picsum.photos/id/29/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197cb"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e4"
+  },
+  "title": "Electric Kettle",
+  "description": "Fast-boiling kettle with auto shut-off and sleek stainless steel design",
+  "price": 1100,
+  "image": "https://picsum.photos/id/89/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e5"
+  },
+  "title": "Running Backpack",
+  "description": "Lightweight backpack with hydration compatibility for outdoor activities",
+  "price": 1300,
+  "image": "https://picsum.photos/id/543/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197ca"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e6"
+  },
+  "title": "Vinyl Record Player",
+  "description": "Retro-style record player with built-in speakers and Bluetooth",
+  "price": 2500,
+  "image": "https://picsum.photos/id/156/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197cb"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e7"
+  },
+  "title": "Sunglasses",
+  "description": "Polarized sunglasses with UV protection and stylish frame",
+  "price": 900,
+  "image": "https://picsum.photos/id/234/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c7"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e8"
+  },
+  "title": "Digital Sketch Pad",
+  "description": "Portable drawing tablet with pressure-sensitive stylus",
+  "price": 3200,
+  "image": "https://picsum.photos/id/678/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197e9"
+  },
+  "title": "Camping Tent",
+  "description": "Weather-resistant tent for 2-3 people with easy setup",
+  "price": 2800,
+  "image": "https://picsum.photos/id/987/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197ca"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197ea"
+  },
+  "title": "Chess Set",
+  "description": "Handcrafted wooden chess set with elegant design",
+  "price": 1400,
+  "image": "https://picsum.photos/id/321/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197cb"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197eb"
+  },
+  "title": "Travel Pillow",
+  "description": "Memory foam travel pillow with ergonomic design",
+  "price": 600,
+  "image": "https://picsum.photos/id/444/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c7"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197ec"
+  },
+  "title": "Smart Thermostat",
+  "description": "Wi-Fi enabled thermostat with energy-saving features",
+  "price": 2000,
+  "image": "https://picsum.photos/id/555/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197ed"
+  },
+  "title": "Gaming Keyboard",
+  "description": "Mechanical keyboard with RGB backlighting and programmable keys",
+  "price": 1500,
+  "image": "https://picsum.photos/id/666/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197ee"
+  },
+  "title": "Board Game Set",
+  "description": "Classic board game set for family and friends",
+  "price": 1100,
+  "image": "https://picsum.photos/id/482/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197cb"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197ef"
+  },
+  "title": "Electric Toothbrush",
+  "description": "Rechargeable toothbrush with multiple brushing modes",
+  "price": 950,
+  "image": "https://picsum.photos/id/777/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f0"
+  },
+  "title": "Hiking Boots",
+  "description": "Durable waterproof hiking boots with ankle support",
+  "price": 1700,
+  "image": "https://picsum.photos/id/888/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197ca"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f1"
+  },
+  "title": "Wireless Mouse",
+  "description": "Silent-click wireless mouse with long battery life",
+  "price": 500,
+  "image": "https://picsum.photos/id/999/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f2"
+  },
+  "title": "Air Purifier",
+  "description": "Compact air purifier with HEPA filter for clean air",
+  "price": 2300,
+  "image": "https://picsum.photos/id/101/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f3"
+  },
+  "title": "Soccer Ball",
+  "description": "Professional-grade soccer ball with durable stitching",
+  "price": 650,
+  "image": "https://picsum.photos/id/202/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197cb"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f4"
+  },
+  "title": "Winter Gloves",
+  "description": "Thermal gloves with touchscreen compatibility",
+  "price": 400,
+  "image": "https://picsum.photos/id/304/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c7"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f5"
+  },
+  "title": "Smart Light Bulb",
+  "description": "Color-changing LED bulb with app control",
+  "price": 300,
+  "image": "https://picsum.photos/id/404/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f6"
+  },
+  "title": "Backpack Cooler",
+  "description": "Insulated backpack cooler for picnics and outdoor trips",
+  "price": 1400,
+  "image": "https://picsum.photos/id/505/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197ca"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f7"
+  },
+  "title": "Bluetooth Earbuds",
+  "description": "True wireless earbuds with sweat resistance",
+  "price": 1100,
+  "image": "https://picsum.photos/id/606/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c8"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f8"
+  },
+  "title": "Cookware Set",
+  "description": "Non-stick cookware set with 5 pieces",
+  "price": 3500,
+  "image": "https://picsum.photos/id/701/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197f9"
+  },
+  "title": "Folding Bike",
+  "description": "Lightweight folding bicycle for urban commuting",
+  "price": 5000,
+  "image": "https://picsum.photos/id/808/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197ca"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197fa"
+  },
+  "title": "Puzzle Game",
+  "description": "1000-piece jigsaw puzzle with scenic artwork",
+  "price": 700,
+  "image": "https://picsum.photos/id/909/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197cb"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197be"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197fb"
+  },
+  "title": "Electric Guitar",
+  "description": "Beginner-friendly electric guitar with amplifier",
+  "price": 3800,
+  "image": "https://picsum.photos/id/111/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197cb"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197fc"
+  },
+  "title": "Smart Doorbell",
+  "description": "Wi-Fi doorbell with camera and motion detection",
+  "price": 2600,
+  "image": "https://picsum.photos/id/222/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197fd"
+  },
+  "title": "Raincoat",
+  "description": "Waterproof raincoat with breathable fabric",
+  "price": 850,
+  "image": "https://picsum.photos/id/323/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c7"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bd"
+  }
+},
+{
+  "_id": {
+    "$oid": "67fe6d3281ab555c417197fe"
+  },
+  "title": "333",
+  "description": "3333",
+  "price": 3333,
+  "image": "https://picsum.photos/id/33/300",
+  "categoryId": {
+    "$oid": "67fe5afc81ab555c417197c9"
+  },
+  "sellerId": {
+    "$oid": "67fe591581ab555c417197bc"
+  }
+}]

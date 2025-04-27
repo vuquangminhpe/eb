@@ -1,0 +1,105 @@
+[{
+  "_id": {
+    "$oid": "6807a4e04ba8d4b31e16cc89"
+  },
+  "orderItemId": {
+    "$oid": "67fe901f81ab555c4171982f"
+  },
+  "carrier": "GHTK",
+  "trackingNumber": "123456789",
+  "status": "shipped",
+  "estimatedArrival": {
+    "$date": "2025-04-29T14:17:04.128Z"
+  },
+  "createdAt": {
+    "$date": "2025-04-22T14:17:04.128Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-22T14:19:07.843Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6807a5a74ba8d4b31e16ccdf"
+  },
+  "orderItemId": {
+    "$oid": "67fe901f81ab555c41719836"
+  },
+  "carrier": "GHTK",
+  "trackingNumber": "123456789",
+  "status": "failed to ship",
+  "estimatedArrival": {
+    "$date": "2025-04-29T14:20:23.198Z"
+  },
+  "createdAt": {
+    "$date": "2025-04-22T14:20:23.199Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-22T14:20:24.398Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6807a5c54ba8d4b31e16ccfd"
+  },
+  "orderItemId": {
+    "$oid": "67fe901f81ab555c41719829"
+  },
+  "carrier": "FedEx",
+  "trackingNumber": "1234567890",
+  "status": "shipping",
+  "estimatedArrival": {
+    "$date": "2025-04-29T14:20:53.182Z"
+  },
+  "createdAt": {
+    "$date": "2025-04-22T14:20:53.182Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-22T16:48:32.029Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6808fbffdc7a695d1ac84899"
+  },
+  "orderItemId": {
+    "$oid": "67fe901f81ab555c4171982b"
+  },
+  "carrier": "GHTK",
+  "trackingNumber": "123456789",
+  "status": "shipped",
+  "estimatedArrival": {
+    "$date": "2025-04-30T14:41:03.609Z"
+  },
+  "createdAt": {
+    "$date": "2025-04-23T14:41:03.610Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-23T14:41:54.082Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "680baa691c94d71fb438fe82"
+  },
+  "orderItemId": {
+    "$oid": "67fe901f81ab555c4171984a"
+  },
+  "carrier": "GHTK",
+  "trackingNumber": "123456789",
+  "status": "shipped",
+  "estimatedArrival": {
+    "$date": "2025-05-02T15:29:45.640Z"
+  },
+  "createdAt": {
+    "$date": "2025-04-25T15:29:45.647Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-25T15:29:46.759Z"
+  },
+  "__v": 0
+}]
