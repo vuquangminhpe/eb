@@ -1,143 +1,148 @@
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Footer from "../../components/Footer";
 import SubMenu from "../../components/SubMenu";
 import MainHeader from "../../components/MainHeader";
 import TopMenu from "../../components/TopMenu";
-
+import { React } from "react";
 // Định nghĩa CheckoutItem
-function CheckoutItem({ product }) {
-  return (
-    <div className="flex items-center gap-4 p-4 border-b">
-      <img
-        src={`${product.image}/100`}
-        alt={product.title}
-        className="w-[100px] h-[100px] object-cover rounded-lg"
-      />
-      <div>
-        <div className="font-semibold">{product.title}</div>
-        <div className="text-sm text-gray-500">{product.description}</div>
-        <div className="font-bold mt-2">
-          £{((product.price * product.quantity) / 100).toFixed(2)}
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Checkout() {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
   const [addressDetails, setAddressDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  console.log("cartItems", cartItems);
+  console.log("addressDetails", addressDetails);
 
-  // Hàm lấy dữ liệu từ API
-  const fetchCartItems = async () => {
-    if (!currentUser) {
-      console.log("No current user, setting empty cart");
-      setCartItems([]);
-      setIsLoading(false);
+  // Sử dụng useRef để tránh re-render không cần thiết
+  const currentUserRef = useRef(
+    JSON.parse(localStorage.getItem("currentUser"))
+  );
+  const cartItemsRef = useRef([]);
+  const addressDetailsRef = useRef(null);
+  const isMountedRef = useRef(true);
+  const fetchingRef = useRef(false);
+
+  // Cập nhật ref khi state thay đổi
+  useEffect(() => {
+    cartItemsRef.current = cartItems;
+    addressDetailsRef.current = addressDetails;
+  }, [cartItems, addressDetails]);
+
+  // Memoized function để fetch cart items
+  const fetchCartItems = useCallback(async () => {
+    // Nếu đang fetch hoặc component unmounted, không tiếp tục
+    if (
+      fetchingRef.current ||
+      !isMountedRef.current ||
+      !currentUserRef.current
+    ) {
       return;
     }
 
+    fetchingRef.current = true;
     try {
-      console.log("Fetching cart for user:", currentUser.id);
       const cartResponse = await fetch(
-        `http://localhost:9999/shoppingCart?userId=${currentUser.id}`
+        `http://localhost:9999/shoppingCart?userId=${currentUserRef.current.id}`
       );
       if (!cartResponse.ok) {
         throw new Error(`Failed to fetch cart: ${cartResponse.status}`);
       }
       const cartData = await cartResponse.json();
-      console.log("Cart data:", cartData);
 
       if (!cartData || cartData.length === 0) {
-        console.log("No cart data found");
-        setCartItems([]);
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setCartItems([]);
+        }
         return;
       }
 
-      // Lấy chi tiết sản phẩm cho từng mục trong giỏ hàng
       const itemsWithDetails = await Promise.all(
         cartData.flatMap((cartItem) =>
           cartItem.productId.map(async (product) => {
-            console.log(`Fetching product with id: ${product.idProduct}`);
-            const productResponse = await fetch(
-              `http://localhost:9999/products?id=${product.idProduct}`
-            );
-            if (!productResponse.ok) {
-              console.warn(
-                `Failed to fetch product with id ${product.idProduct}: ${productResponse.status}`
+            try {
+              const productResponse = await fetch(
+                `http://localhost:9999/products?id=${product.idProduct}`
               );
+              if (!productResponse.ok) return null;
+
+              const productData = await productResponse.json();
+              let productInfo = Array.isArray(productData)
+                ? productData[0]
+                : productData;
+
+              if (productInfo) {
+                return {
+                  ...productInfo,
+                  quantity: parseInt(product.quantity),
+                  idProduct: product.idProduct,
+                  cartItemId: cartItem.id,
+                };
+              }
+              return null;
+            } catch (err) {
               return null;
             }
-            const productData = await productResponse.json();
-            console.log(
-              `Product data for id ${product.idProduct}:`,
-              productData
-            );
-
-            // Xử lý cả trường hợp API trả về mảng hoặc object
-            let productInfo = Array.isArray(productData)
-              ? productData[0]
-              : productData;
-            if (productInfo) {
-              return {
-                ...productInfo,
-                quantity: parseInt(product.quantity),
-                idProduct: product.idProduct,
-                cartItemId: cartItem.id,
-              };
-            }
-            console.warn(`No product data found for id ${product.idProduct}`);
-            return null;
           })
         )
       );
 
       const filteredItems = itemsWithDetails.filter((item) => item !== null);
-      console.log("Filtered cart items:", filteredItems);
-      if (filteredItems.length === 0) {
-        console.warn(
-          "No valid products found in cart. Check if products exist in the database or if the API response format is correct."
-        );
-      }
-      setCartItems(filteredItems);
-    } catch (error) {
-      console.error("Error fetching cart:", error);
-      setCartItems([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  // Hàm lấy thông tin địa chỉ từ API
-  const fetchAddressDetails = async () => {
-    if (!currentUser) return;
+      // Chỉ cập nhật state nếu dữ liệu mới khác dữ liệu cũ
+      if (isMountedRef.current) {
+        // So sánh dữ liệu mới và dữ liệu cũ
+        const currentItems = JSON.stringify(cartItemsRef.current);
+        const newItems = JSON.stringify(filteredItems);
+
+        if (currentItems !== newItems) {
+          setCartItems(filteredItems);
+        }
+      }
+    } catch (error) {
+      if (isMountedRef.current) {
+        setCartItems([]);
+      }
+    } finally {
+      fetchingRef.current = false;
+    }
+  }, []);
+
+  // Memoized function để fetch địa chỉ
+  const fetchAddressDetails = useCallback(async () => {
+    if (!currentUserRef.current || !isMountedRef.current) return;
 
     try {
-      console.log("Fetching address for user:", currentUser.id);
       const userResponse = await fetch(
-        `http://localhost:9999/user?id=${currentUser.id}`
+        `http://localhost:9999/user?id=${currentUserRef.current.id}`
       );
       if (!userResponse.ok) {
         throw new Error(`Failed to fetch user: ${userResponse.status}`);
       }
       const userData = await userResponse.json();
-      console.log("User data:", userData);
-      const user = userData.find((user) => user.id === currentUser.id); // Tìm user theo id
+      const user = userData.find(
+        (user) => user.id === currentUserRef.current.id
+      );
+
       if (user) {
-        setAddressDetails({
+        const newAddressDetails = {
           name: user.fullname,
-          address: user.address.street,
-          zipcode: user.address.zipcode,
-          city: user.address.city,
-          country: user.address.country,
-        });
-      } else {
-        console.warn("User not found");
+          address: user.address?.street || "N/A",
+          zipcode: user.address?.zipcode || "N/A",
+          city: user.address?.city || "N/A",
+          country: user.address?.country || "N/A",
+        };
+
+        // Chỉ cập nhật state nếu dữ liệu mới khác dữ liệu cũ
+        if (
+          isMountedRef.current &&
+          JSON.stringify(newAddressDetails) !==
+            JSON.stringify(addressDetailsRef.current)
+        ) {
+          setAddressDetails(newAddressDetails);
+        }
+      } else if (isMountedRef.current) {
         setAddressDetails({
           name: "N/A",
           address: "N/A",
@@ -147,34 +152,29 @@ export default function Checkout() {
         });
       }
     } catch (error) {
-      console.error("Error fetching address:", error);
-      setAddressDetails({
-        name: "N/A",
-        address: "N/A",
-        zipcode: "N/A",
-        city: "N/A",
-        country: "N/A",
-      });
+      if (isMountedRef.current) {
+        setAddressDetails({
+          name: "N/A",
+          address: "N/A",
+          zipcode: "N/A",
+          city: "N/A",
+          country: "N/A",
+        });
+      }
     }
-  };
+  }, []);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      await Promise.all([fetchCartItems(), fetchAddressDetails()]);
-    };
-    fetchData();
-  }, [currentUser]);
-
-  // Tính tổng tiền
-  const getCartTotal = () => {
+  // Memoized function để tính tổng giỏ hàng
+  const getCartTotal = useCallback(() => {
     return cartItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
-  };
+  }, [cartItems]);
 
-  const handlePayment = async () => {
-    if (!currentUser) {
+  // Memoized function để xử lý thanh toán
+  const handlePayment = useCallback(async () => {
+    if (!currentUserRef.current) {
       alert("Please login to checkout");
       navigate("/auth");
       return;
@@ -185,52 +185,72 @@ export default function Checkout() {
       return;
     }
 
-    const orderId = "ORD" + Math.floor(100 + Math.random() * 900);
-    const orderData = {
-      order_id: orderId,
-      user_id: currentUser.id,
-      order_date: new Date().toISOString(),
-      total_amount: parseFloat((getCartTotal() / 100).toFixed(2)),
-      status: "pending",
-      items: cartItems.map((item) => ({
-        product_name: item.title,
-        quantity: item.quantity,
-        price: parseFloat((item.price / 100).toFixed(2)),
-      })),
-    };
-
     try {
+      setIsLoading(true);
+      const orderId = "ORD" + Math.floor(100 + Math.random() * 900);
+      const orderData = {
+        order_id: orderId,
+        user_id: currentUserRef.current.id,
+        order_date: new Date().toISOString(),
+        total_amount: parseFloat((getCartTotal() / 100).toFixed(2)),
+        status: "pending",
+        items: cartItems.map((item) => ({
+          product_name: item.title,
+          quantity: item.quantity,
+          price: parseFloat((item.price / 100).toFixed(2)),
+        })),
+      };
+
       // 1. Lưu đơn hàng mới vào orders
-      await fetch("http://localhost:9999/orders", {
+      const orderResponse = await fetch("http://localhost:9999/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(orderData),
       });
 
+      if (!orderResponse.ok) {
+        throw new Error("Failed to create order");
+      }
+
       // 2. Cập nhật user.order_id
-      const updatedOrderIds = [...(currentUser.order_id || []), orderId];
-      await fetch(`http://localhost:9999/user/${currentUser.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order_id: updatedOrderIds }),
-      });
+      const updatedOrderIds = [
+        ...(currentUserRef.current.order_id || []),
+        orderId,
+      ];
+      const userResponse = await fetch(
+        `http://localhost:9999/user/${currentUserRef.current.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ order_id: updatedOrderIds }),
+        }
+      );
+
+      if (!userResponse.ok) {
+        throw new Error("Failed to update user");
+      }
 
       // 3. Xoá toàn bộ giỏ hàng sau khi thanh toán
       const cartRes = await fetch(
-        `http://localhost:9999/shoppingCart?userId=${currentUser.id}`
+        `http://localhost:9999/shoppingCart?userId=${currentUserRef.current.id}`
       );
       const cartData = await cartRes.json();
-      for (let cart of cartData) {
-        await fetch(`http://localhost:9999/shoppingCart/${cart.id}`, {
-          method: "DELETE",
-        });
-      }
+
+      await Promise.all(
+        cartData.map((cart) =>
+          fetch(`http://localhost:9999/shoppingCart/${cart.id}`, {
+            method: "DELETE",
+          })
+        )
+      );
 
       // Cập nhật localStorage
-      localStorage.setItem(
-        "currentUser",
-        JSON.stringify({ ...currentUser, order_id: updatedOrderIds })
-      );
+      const updatedUser = {
+        ...currentUserRef.current,
+        order_id: updatedOrderIds,
+      };
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+      currentUserRef.current = updatedUser;
 
       // Điều hướng đến trang success
       navigate("/success", {
@@ -241,12 +261,36 @@ export default function Checkout() {
         },
       });
     } catch (error) {
-      console.error("Payment error:", error);
       alert("Đã xảy ra lỗi khi thanh toán.");
+      setIsLoading(false);
     }
-  };
+  }, [cartItems, addressDetails, getCartTotal, navigate]);
 
-  if (!currentUser) {
+  // Fetch dữ liệu khi component mount
+  useEffect(() => {
+    isMountedRef.current = true;
+    setIsLoading(true);
+
+    const fetchData = async () => {
+      try {
+        await Promise.all([fetchCartItems(), fetchAddressDetails()]);
+      } finally {
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    // cleanup khi unmount
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [fetchCartItems, fetchAddressDetails]);
+
+  // Hiển thị trang login nếu chưa đăng nhập
+  if (!currentUserRef.current) {
     return (
       <div id="MainLayout" className="min-w-[1050px] max-w-[1300px] mx-auto">
         <div>
@@ -315,10 +359,26 @@ export default function Checkout() {
                     <div className="text-center py-4">No items in cart</div>
                   ) : (
                     cartItems.map((product) => (
-                      <CheckoutItem
-                        key={`${product.cartItemId}-${product.idProduct}`}
-                        product={product}
-                      />
+                      <div className="flex items-center gap-4 p-4 border-b">
+                        <img
+                          src={`${product?.image}/100`}
+                          alt={product?.title}
+                          className="w-[100px] h-[100px] object-cover rounded-lg"
+                        />
+                        <div>
+                          <div className="font-semibold">{product?.title}</div>
+                          <div className="text-sm text-gray-500">
+                            {product?.description}
+                          </div>
+                          <div className="font-bold mt-2">
+                            £
+                            {(
+                              (product?.price * product?.quantity) /
+                              100
+                            ).toFixed(2)}
+                          </div>
+                        </div>
+                      </div>
                     ))
                   )}
                 </div>
@@ -359,8 +419,9 @@ export default function Checkout() {
                   <button
                     className="mt-4 bg-blue-600 text-lg w-full text-white font-semibold p-3 rounded-full hover:bg-blue-700"
                     onClick={handlePayment}
+                    disabled={isLoading || cartItems.length === 0}
                   >
-                    Confirm and pay
+                    {isLoading ? "Processing..." : "Confirm and pay"}
                   </button>
                 </div>
 
