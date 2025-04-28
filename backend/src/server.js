@@ -39,6 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/", routes);
+app.use("/auth", require("./routes/auth.routes"));
 app.use("/products", productRoutes);
 app.use("/inventory", inventoryRoutes);
 app.use("/categories", categoryRoutes);
