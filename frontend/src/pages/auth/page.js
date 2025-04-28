@@ -25,7 +25,7 @@ export default function AuthPage() {
   const navigate = useNavigate();
 
   // API base URL
-  const API_URL = "http://localhost:5000/api";
+  const API_URL = "http://localhost:9999";
 
   const handleSubmit = async (e) => {
     e.preventDefault();

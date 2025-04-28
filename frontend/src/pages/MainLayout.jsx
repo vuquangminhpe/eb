@@ -283,10 +283,17 @@ const MainPage = () => {
 
   // Get category name by ID
   const getCategoryName = (categoryId) => {
-    const category = categories.find(
-      (cat) => String(cat.id) === String(categoryId)
-    );
-    return category ? category.name : "Unknown Category";
+    console.log("CategoryId:", categoryId, "Type:", typeof categoryId);
+    const category = categories.find((cat) => {
+      console.log("Cat ID:", cat._id, "Type:", typeof cat._id);
+      return String(cat._id) === String(categoryId);
+    });
+    console.log("Found category:", category);
+    return category
+      ? typeof category.name === "object"
+        ? JSON.stringify(category.name)
+        : category.name
+      : "Unknown Category";
   };
 
   // Xử lý thêm/xóa sản phẩm khỏi wishlist
@@ -511,15 +518,15 @@ const MainPage = () => {
                   All Categories
                 </span>
               </button>
-              {categories.map((category) => (
+              {categories.map((category, index) => (
                 <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
+                  key={index}
+                  onClick={() => setSelectedCategory(category._id)}
                   className="flex flex-col items-center group"
                 >
                   <div
                     className={`w-40 h-40 rounded-full flex items-center justify-center bg-white mb-4 shadow-lg transition-all duration-300 overflow-hidden group-hover:shadow-xl ${
-                      selectedCategory === category.id
+                      selectedCategory === category._id
                         ? "ring-3 ring-blue-500"
                         : ""
                     }`}
@@ -601,21 +608,21 @@ const MainPage = () => {
               </div>
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
-                {paginatedProducts.map((product) => (
-                  <Product key={product.id} product={product} />
+                {paginatedProducts.map((product, index) => (
+                  <Product key={index} product={product} />
                 ))}
               </div>
             ) : (
               <div className="space-y-4 mb-8">
                 {paginatedProducts.map((product) => (
                   <div
-                    key={product.id}
+                    key={product._id}
                     className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300"
                   >
                     <div className="flex flex-col sm:flex-row">
                       <div className="sm:w-48 h-48 flex-shrink-0">
                         <img
-                          src={`${product.url}/300`}
+                          src={product.image}
                           alt={product.title}
                           className="w-full h-full object-cover"
                         />

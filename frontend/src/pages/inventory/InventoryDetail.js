@@ -8,14 +8,14 @@ export default function InventoryDetail() {
   const [quantity, setQuantity] = useState("");
 
   useEffect(() => {
-    fetch(`http://localhost:5000/api/inventory/${inventoryId}`)
-      .then(res => res.json())
-      .then(data => {
+    fetch(`http://localhost:9999/inventory/${inventoryId}`)
+      .then((res) => res.json())
+      .then((data) => {
         setInventory(data);
         setQuantity(data.quantity);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error("Error fetching inventory details:", err);
         setLoading(false);
       });
@@ -27,13 +27,16 @@ export default function InventoryDetail() {
         quantity: parseInt(quantity) || 0,
       };
 
-      const res = await fetch(`http://localhost:5000/api/inventory/${inventoryId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedInventory),
-      });
+      const res = await fetch(
+        `http://localhost:9999/inventory/${inventoryId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedInventory),
+        }
+      );
 
       const data = await res.json();
 
@@ -60,9 +63,15 @@ export default function InventoryDetail() {
             alt={inventory.product.title}
             className="w-full h-64 object-cover mb-4"
           />
-          <p className="text-sm text-gray-600">Price: £{(inventory.product.price / 100).toFixed(2)}</p>
-          <p className="text-sm text-gray-500">Category: {inventory.product.categoryId.name}</p>
-          <p className="text-xs text-gray-500">Current Quantity: {inventory.quantity}</p>
+          <p className="text-sm text-gray-600">
+            Price: £{(inventory.product.price / 100).toFixed(2)}
+          </p>
+          <p className="text-sm text-gray-500">
+            Category: {inventory.product.categoryId.name}
+          </p>
+          <p className="text-xs text-gray-500">
+            Current Quantity: {inventory.quantity}
+          </p>
           <div className="my-4">
             <input
               type="number"

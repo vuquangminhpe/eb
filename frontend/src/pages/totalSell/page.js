@@ -1,32 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import MainHeader from '../../components/MainHeader';
-import { useNavigate } from 'react-router-dom';
-import TopMenu from '../../components/TopMenu';
-import SubMenu from '../../components/SubMenu';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import React, { useState, useEffect } from "react";
+import MainHeader from "../../components/MainHeader";
+import { useNavigate } from "react-router-dom";
+import TopMenu from "../../components/TopMenu";
+import SubMenu from "../../components/SubMenu";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
 
 const TotalSell = () => {
   const navigate = useNavigate();
   const [orderItems, setOrderItems] = useState([]);
   const [loggedInUser, setLoggedInUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [timeFilter, setTimeFilter] = useState('all'); // 'all', 'week', 'month', 'year'
+  const [timeFilter, setTimeFilter] = useState("all"); // 'all', 'week', 'month', 'year'
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userData = localStorage.getItem('currentUser');
+        const userData = localStorage.getItem("currentUser");
         if (userData) {
           setLoggedInUser(JSON.parse(userData));
-          fetch(`http://localhost:5000/api/orderItems/statistic/${JSON.parse(userData).id}`)
-            .then(response => response.json())
-            .then(data => {
+          fetch(
+            `http://localhost:9999/orderItems/statistic/${
+              JSON.parse(userData).id
+            }`
+          )
+            .then((response) => response.json())
+            .then((data) => {
               setOrderItems(data);
             });
         }
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         setLoading(false);
       }
     };
@@ -36,44 +52,44 @@ const TotalSell = () => {
   // Statistics calculation functions
   const calculateTotalRevenue = (items) => {
     return items.reduce((total, item) => {
-      return total + (item.productId.price * item.quantity);
+      return total + item.productId.price * item.quantity;
     }, 0);
   };
 
   const countUniqueCustomers = (items) => {
     const uniqueCustomerIds = new Set(
-      items.map(item => item.orderId.buyerId._id)
+      items.map((item) => item.orderId.buyerId._id)
     );
     return uniqueCustomerIds.size;
   };
 
   const revenueByCategory = (items) => {
     const categoryRevenue = {};
-    
-    items.forEach(item => {
+
+    items.forEach((item) => {
       const categoryName = item.productId.categoryId.name;
       const itemRevenue = item.productId.price * item.quantity;
-      
+
       if (categoryRevenue[categoryName]) {
         categoryRevenue[categoryName] += itemRevenue;
       } else {
         categoryRevenue[categoryName] = itemRevenue;
       }
     });
-    
+
     return Object.entries(categoryRevenue).map(([name, value]) => ({
       name,
-      value
+      value,
     }));
   };
 
   const salesByProduct = (items) => {
     const productSales = {};
-    
-    items.forEach(item => {
+
+    items.forEach((item) => {
       const productId = item.productId._id;
       const productTitle = item.productId.title;
-      
+
       if (productSales[productId]) {
         productSales[productId].quantity += item.quantity;
         productSales[productId].revenue += item.productId.price * item.quantity;
@@ -81,17 +97,17 @@ const TotalSell = () => {
         productSales[productId] = {
           title: productTitle,
           quantity: item.quantity,
-          revenue: item.productId.price * item.quantity
+          revenue: item.productId.price * item.quantity,
         };
       }
     });
-    
+
     return Object.entries(productSales)
       .map(([id, data]) => ({
         id,
         name: data.title,
         quantity: data.quantity,
-        revenue: data.revenue
+        revenue: data.revenue,
       }))
       .sort((a, b) => b.revenue - a.revenue);
   };
@@ -99,72 +115,74 @@ const TotalSell = () => {
   // New function: Shipping Destinations
   const shippingDestinations = (items) => {
     const cityData = {};
-    
-    items.forEach(item => {
+
+    items.forEach((item) => {
       const city = item.orderId.addressId.city;
       const itemRevenue = item.productId.price * item.quantity;
-      
+
       if (cityData[city]) {
         cityData[city].count += 1;
         cityData[city].revenue += itemRevenue;
       } else {
         cityData[city] = {
           count: 1,
-          revenue: itemRevenue
+          revenue: itemRevenue,
         };
       }
     });
-    
+
     return Object.entries(cityData)
       .map(([name, data]) => ({
         name,
         value: data.revenue,
-        count: data.count
+        count: data.count,
       }))
       .sort((a, b) => b.value - a.value);
   };
 
   const revenueByDate = (items) => {
     const dateRevenue = {};
-    
-    items.forEach(item => {
-      const orderDate = new Date(item.orderId.orderDate).toISOString().split('T')[0];
+
+    items.forEach((item) => {
+      const orderDate = new Date(item.orderId.orderDate)
+        .toISOString()
+        .split("T")[0];
       const itemRevenue = item.productId.price * item.quantity;
-      
+
       if (dateRevenue[orderDate]) {
         dateRevenue[orderDate] += itemRevenue;
       } else {
         dateRevenue[orderDate] = itemRevenue;
       }
     });
-    
+
     return Object.entries(dateRevenue)
       .map(([date, revenue]) => ({
         date,
-        revenue
+        revenue,
       }))
       .sort((a, b) => new Date(a.date) - new Date(b.date));
   };
 
   // Filter data based on time selection
   const getFilteredData = () => {
-    if (timeFilter === 'all' || orderItems.length === 0) return orderItems;
-    
+    if (timeFilter === "all" || orderItems.length === 0) return orderItems;
+
     const now = new Date();
     let startDate;
-    
-    if (timeFilter === 'week') {
+
+    if (timeFilter === "week") {
       startDate = new Date(now);
       startDate.setDate(now.getDate() - 7);
-    } else if (timeFilter === 'month') {
+    } else if (timeFilter === "month") {
       startDate = new Date(now);
       startDate.setMonth(now.getMonth() - 1);
-    } else if (timeFilter === 'year') {
+    } else if (timeFilter === "year") {
       startDate = new Date(now);
       startDate.setFullYear(now.getFullYear() - 1);
     }
-    
-    return orderItems.filter(item => {
+
+    return orderItems.filter((item) => {
       const orderDate = new Date(item.orderId.orderDate);
       return orderDate >= startDate;
     });
@@ -178,7 +196,14 @@ const TotalSell = () => {
   const destinationData = shippingDestinations(filteredData);
   const timeData = revenueByDate(filteredData);
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+  const COLORS = [
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#8884d8",
+    "#82ca9d",
+  ];
 
   if (loading) return <div className="text-center p-4">Loading data...</div>;
 
@@ -189,7 +214,9 @@ const TotalSell = () => {
         <MainHeader />
         <SubMenu />
         <div className="mt-4 text-center p-6 bg-white border rounded-lg shadow-md">
-          <p className="text-gray-600">Please log in to view your sales revenue.</p>
+          <p className="text-gray-600">
+            Please log in to view your sales revenue.
+          </p>
         </div>
       </div>
     );
@@ -204,10 +231,11 @@ const TotalSell = () => {
         <div className="bg-white border rounded-lg p-6 shadow-md">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-semibold text-gray-800">
-              Shipped Items Overview (Seller: {loggedInUser.fullname || loggedInUser.username})
+              Shipped Items Overview (Seller:{" "}
+              {loggedInUser.fullname || loggedInUser.username})
             </h3>
             <div className="flex gap-4">
-              <select 
+              <select
                 className="px-3 py-2 border rounded"
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
@@ -218,19 +246,23 @@ const TotalSell = () => {
                 <option value="year">Last Year</option>
               </select>
               <button
-                onClick={() => navigate('/products')}
+                onClick={() => navigate("/products")}
                 className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
                 Quản lý sản phẩm
               </button>
             </div>
           </div>
-          
+
           {/* Summary Cards */}
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-              <h4 className="text-blue-700 font-medium">Total Revenue (Shipped)</h4>
-              <p className="text-2xl font-bold">${totalRevenue.toLocaleString()}</p>
+              <h4 className="text-blue-700 font-medium">
+                Total Revenue (Shipped)
+              </h4>
+              <p className="text-2xl font-bold">
+                ${totalRevenue.toLocaleString()}
+              </p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg border border-green-100">
               <h4 className="text-green-700 font-medium">Unique Customers</h4>
@@ -239,11 +271,14 @@ const TotalSell = () => {
             <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
               <h4 className="text-purple-700 font-medium">Products Shipped</h4>
               <p className="text-2xl font-bold">
-                {[...new Set(filteredData.map(item => item.productId._id))].length}
+                {
+                  [...new Set(filteredData.map((item) => item.productId._id))]
+                    .length
+                }
               </p>
             </div>
           </div>
-          
+
           {/* Charts Row */}
           <div className="grid grid-cols-2 gap-6 mb-6">
             {/* Category Distribution */}
@@ -260,22 +295,31 @@ const TotalSell = () => {
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) =>
+                        `${name}: ${(percent * 100).toFixed(0)}%`
+                      }
                     >
                       {categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                    <Tooltip
+                      formatter={(value) => `$${value.toLocaleString()}`}
+                    />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             </div>
-            
+
             {/* Top Shipping Destinations */}
             <div className="border rounded-lg p-4">
-              <h4 className="text-lg font-medium mb-2">Top Shipping Destinations</h4>
+              <h4 className="text-lg font-medium mb-2">
+                Top Shipping Destinations
+              </h4>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -287,20 +331,30 @@ const TotalSell = () => {
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      label={({ name, percent }) =>
+                        `${name}: ${(percent * 100).toFixed(0)}%`
+                      }
                     >
                       {destinationData.slice(0, 6).map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value, name, props) => [`$${value.toLocaleString()}`, props.payload.name]} />
+                    <Tooltip
+                      formatter={(value, name, props) => [
+                        `$${value.toLocaleString()}`,
+                        props.payload.name,
+                      ]}
+                    />
                     <Legend />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
             </div>
           </div>
-          
+
           {/* Revenue Over Time */}
           <div className="border rounded-lg p-4 mb-6">
             <h4 className="text-lg font-medium mb-2">Revenue Over Time</h4>
@@ -310,14 +364,16 @@ const TotalSell = () => {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" />
                   <YAxis />
-                  <Tooltip formatter={(value) => `$${value.toLocaleString()}`} />
+                  <Tooltip
+                    formatter={(value) => `$${value.toLocaleString()}`}
+                  />
                   <Legend />
                   <Bar dataKey="revenue" fill="#8884d8" name="Revenue" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
-          
+
           {/* Product Table */}
           <div className="border rounded-lg p-4">
             <h4 className="text-lg font-medium mb-2">Top Products</h4>
@@ -335,7 +391,9 @@ const TotalSell = () => {
                     <tr key={product.id} className="border-t">
                       <td className="py-2 px-4">{product.name}</td>
                       <td className="py-2 px-4">{product.quantity}</td>
-                      <td className="py-2 px-4">${product.revenue.toLocaleString()}</td>
+                      <td className="py-2 px-4">
+                        ${product.revenue.toLocaleString()}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

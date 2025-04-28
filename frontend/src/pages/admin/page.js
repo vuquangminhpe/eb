@@ -158,18 +158,15 @@ const AdminDashboard = () => {
           "Content-Type": "application/json",
         };
 
-        const usersResponse = await fetch(
-          "http://localhost:5000/api/admin/users",
-          {
-            headers,
-          }
-        );
+        const usersResponse = await fetch("http://localhost:9999/admin/users", {
+          headers,
+        });
         const usersData = await usersResponse.json();
         console.log("Users data received:", usersData);
         setUsers(usersData.users); // Sửa thành usersData.users
 
         const ordersResponse = await fetch(
-          "http://localhost:5000/api/admin/orders",
+          "http://localhost:9999/admin/orders",
           {
             headers,
           }
@@ -178,29 +175,34 @@ const AdminDashboard = () => {
         setOrders(ordersData.orders || ordersData); // Thêm fallback
 
         const categoriesResponse = await fetch(
-          "http://localhost:5000/api/admin/categories",
+          "http://localhost:9999/admin/categories",
           { headers }
         );
         const categoriesData = await categoriesResponse.json();
         setCategories(categoriesData.categories || categoriesData); // Thêm fallback
 
-        const productsResponse = await fetch(
-          "http://localhost:5000/api/products",
-          { headers }
-        );
+        const productsResponse = await fetch("http://localhost:9999/products", {
+          headers,
+        });
         const productsData = await productsResponse.json();
         setProducts(productsData);
 
         // Add fetch for stores
         const storesResponse = await fetch(
-          "http://localhost:5000/api/admin/stores",
+          "http://localhost:9999/admin/stores",
           {
             headers,
           }
         );
         const storesData = await storesResponse.json();
         // Ensure stores is always an array
-        setStores(Array.isArray(storesData.stores) ? storesData.stores : Array.isArray(storesData) ? storesData : []);
+        setStores(
+          Array.isArray(storesData.stores)
+            ? storesData.stores
+            : Array.isArray(storesData)
+            ? storesData
+            : []
+        );
 
         setLoading(false);
       } catch (err) {
@@ -249,7 +251,7 @@ const AdminDashboard = () => {
       if (userData._id) {
         // Cập nhật user
         const response = await fetch(
-          `http://localhost:5000/api/admin/users/${userData._id}`,
+          `http://localhost:9999/admin/users/${userData._id}`,
           {
             method: "PUT",
             headers,
@@ -264,7 +266,7 @@ const AdminDashboard = () => {
         }
       } else {
         // Thêm user mới
-        const response = await fetch("http://localhost:5000/api/admin/users", {
+        const response = await fetch("http://localhost:9999/admin/users", {
           method: "POST",
           headers,
           body: JSON.stringify(userData),
@@ -293,7 +295,7 @@ const AdminDashboard = () => {
       if (productData._id) {
         // Cập nhật sản phẩm
         const response = await fetch(
-          `http://localhost:5000/api/products/${productData._id}`,
+          `http://localhost:9999/products/${productData._id}`,
           {
             method: "PUT",
             headers,
@@ -310,7 +312,7 @@ const AdminDashboard = () => {
         }
       } else {
         // Thêm sản phẩm mới
-        const response = await fetch("http://localhost:5000/api/products", {
+        const response = await fetch("http://localhost:9999/products", {
           method: "POST",
           headers,
           body: JSON.stringify(productData),
@@ -339,7 +341,7 @@ const AdminDashboard = () => {
       if (categoryData._id) {
         // Cập nhật danh mục
         const response = await fetch(
-          `http://localhost:5000/api/admin/categories/${categoryData._id}`,
+          `http://localhost:9999/admin/categories/${categoryData._id}`,
           {
             method: "PUT",
             headers,
@@ -356,14 +358,11 @@ const AdminDashboard = () => {
         }
       } else {
         // Thêm danh mục mới
-        const response = await fetch(
-          "http://localhost:5000/api/admin/categories",
-          {
-            method: "POST",
-            headers,
-            body: JSON.stringify(categoryData),
-          }
-        );
+        const response = await fetch("http://localhost:9999/admin/categories", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(categoryData),
+        });
 
         if (response.ok) {
           const newCategory = await response.json();
@@ -384,7 +383,7 @@ const AdminDashboard = () => {
         Authorization: `Bearer ${token}`,
       };
 
-      const response = await fetch(`http://localhost:5000/api/${type}/${id}`, {
+      const response = await fetch(`http://localhost:9999/${type}/${id}`, {
         method: "DELETE",
         headers,
       });
@@ -419,7 +418,7 @@ const AdminDashboard = () => {
       };
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/orders/${orderId}`,
+        `http://localhost:9999/admin/orders/${orderId}`,
         {
           method: "PATCH",
           headers,
@@ -448,7 +447,7 @@ const AdminDashboard = () => {
       };
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/stores/${storeId}/approve`,
+        `http://localhost:9999/admin/stores/${storeId}/approve`,
         {
           method: "PATCH",
           headers,
@@ -477,7 +476,7 @@ const AdminDashboard = () => {
       };
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/stores/${storeId}/reject`,
+        `http://localhost:9999/admin/stores/${storeId}/reject`,
         {
           method: "PATCH",
           headers,
@@ -503,7 +502,7 @@ const AdminDashboard = () => {
       const newStatus = currentStatus === "active" ? "blocked" : "active";
 
       const response = await fetch(
-        `http://localhost:5000/api/admin/users/${userId}/toggle-status`,
+        `http://localhost:9999/admin/users/${userId}/toggle-status`,
         {
           method: "PATCH",
           headers,

@@ -4,14 +4,14 @@ export default function Product({ product }) {
   return (
     <>
       <Link
-        to={`/product/${product?.id}`}
+        to={`/product/${product?._id}`}
         className="max-w-[200px] p-1.5 border border-gray-50 hover:border-gray-200 hover:shadow-xl bg-gray-100 rounded mx-auto"
       >
         {product?.url ? (
           <div className="relative">
             <img
-              className="rounded cursor-pointer"
-              src={product.url + "/190"}
+              className="rounded w-full h-full cursor-pointer"
+              src={product.image}
               alt={product.title}
             />
             {product.status === "unavailable" && (
@@ -37,10 +37,13 @@ export default function Product({ product }) {
             <div className="px-2">-</div>
             <div className="line-through">20%</div>
           </div>
-          
+
           {/* Category badge */}
           <div className="mt-1 inline-block bg-gray-200 rounded-full px-2 py-0.5 text-xs">
-            Category: {product.categoryId}
+            Category:{" "}
+            {typeof product.categoryId === "object"
+              ? product.categoryId.name
+              : product.categoryId}
           </div>
         </div>
       </Link>

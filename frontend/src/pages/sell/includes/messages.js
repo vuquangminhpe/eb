@@ -29,8 +29,12 @@ const Messages = () => {
 
     const fetchMessages = async () => {
       try {
-        const inboxRes = await axios.get(`http://localhost:5000/api/messages/inbox/${userId}`);
-        const sentRes = await axios.get(`http://localhost:5000/api/messages/sent/${userId}`);
+        const inboxRes = await axios.get(
+          `http://localhost:9999/messages/inbox/${userId}`
+        );
+        const sentRes = await axios.get(
+          `http://localhost:9999/messages/sent/${userId}`
+        );
         setMessages([...inboxRes.data, ...sentRes.data]);
       } catch (err) {
         console.error("Lỗi khi lấy tin nhắn:", err);
@@ -41,11 +45,12 @@ const Messages = () => {
   }, [userId]);
 
   const handleReply = async (messageId, receiverId) => {
-    if (replyContent.trim() === "") return alert("Vui lòng nhập nội dung phản hồi!");
+    if (replyContent.trim() === "")
+      return alert("Vui lòng nhập nội dung phản hồi!");
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/messages/reply",
+        "http://localhost:9999/messages/reply",
         { content: replyContent, messageId, receiverId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -88,7 +93,9 @@ const Messages = () => {
   };
 
   const groupedMessages = groupMessagesByPartner();
-  const currentMessages = activePartnerId ? groupedMessages[activePartnerId]?.messages || [] : [];
+  const currentMessages = activePartnerId
+    ? groupedMessages[activePartnerId]?.messages || []
+    : [];
 
   if (!userId) {
     return (
@@ -104,7 +111,9 @@ const Messages = () => {
     <div className="flex h-[80vh] bg-gray-100 rounded-lg overflow-hidden">
       {/* Sidebar */}
       <div className="w-1/3 bg-white border-r overflow-y-auto">
-        <h3 className="text-lg font-semibold p-4 border-b">Danh sách trò chuyện</h3>
+        <h3 className="text-lg font-semibold p-4 border-b">
+          Danh sách trò chuyện
+        </h3>
         {Object.entries(groupedMessages)
           .sort(([, a], [, b]) => {
             const aLast = a.messages[a.messages.length - 1]?.createdAt || 0;
@@ -126,9 +135,15 @@ const Messages = () => {
                     {(partner?.username || "U").charAt(0).toUpperCase()}
                   </div>
                   <div className="ml-3 overflow-hidden">
-                    <p className="font-medium truncate">{partner?.username || "Người dùng"}</p>
-                    <p className="text-sm text-gray-500 truncate">{lastMessage?.content}</p>
-                    <p className="text-xs text-gray-400">{timeAgo(lastMessage?.createdAt)}</p>
+                    <p className="font-medium truncate">
+                      {partner?.username || "Người dùng"}
+                    </p>
+                    <p className="text-sm text-gray-500 truncate">
+                      {lastMessage?.content}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {timeAgo(lastMessage?.createdAt)}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -142,16 +157,24 @@ const Messages = () => {
           <div className="flex flex-col h-full">
             <div className="mb-4 border-b pb-2">
               <h2 className="text-xl font-semibold text-gray-800">
-                Đối thoại với {groupedMessages[activePartnerId]?.partner?.username || "Người dùng"}
+                Đối thoại với{" "}
+                {groupedMessages[activePartnerId]?.partner?.username ||
+                  "Người dùng"}
               </h2>
             </div>
             <ul className="space-y-3 flex-1 overflow-y-auto">
               {currentMessages
                 .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
                 .map((msg) => {
-                  const isSender = msg.senderId?._id === userId || msg.senderId === userId;
+                  const isSender =
+                    msg.senderId?._id === userId || msg.senderId === userId;
                   return (
-                    <li key={msg._id} className={`flex ${isSender ? "justify-end" : "justify-start"}`}>
+                    <li
+                      key={msg._id}
+                      className={`flex ${
+                        isSender ? "justify-end" : "justify-start"
+                      }`}
+                    >
                       <div
                         className={`max-w-2/3 p-3 rounded-lg ${
                           isSender
@@ -170,7 +193,10 @@ const Messages = () => {
                         {!isSender && (
                           <button
                             onClick={() =>
-                              setReplyingTo({ messageId: msg._id, receiverId: activePartnerId })
+                              setReplyingTo({
+                                messageId: msg._id,
+                                receiverId: activePartnerId,
+                              })
                             }
                             className="mt-1 text-xs font-medium px-2 py-1 rounded bg-blue-100 text-blue-600"
                           >

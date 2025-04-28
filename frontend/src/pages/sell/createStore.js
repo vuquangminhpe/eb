@@ -57,17 +57,14 @@ const CreateStore = () => {
         return;
       }
 
-      const response = await fetch(
-        "http://localhost:5000/api/auth/create-store",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch("http://localhost:9999/auth/create-store", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
 
       const data = await response.json();
 
@@ -184,7 +181,7 @@ const CreateStore = () => {
                     alt="Store Banner Preview"
                     className="max-h-40 rounded border"
                     onError={(e) => {
-                      e.target.src = ''; // Xóa ảnh nếu URL không hợp lệ
+                      e.target.src = ""; // Xóa ảnh nếu URL không hợp lệ
                       setError("Invalid image URL");
                     }}
                   />

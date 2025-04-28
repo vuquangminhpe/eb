@@ -1,10 +1,10 @@
-const express = require('express');
-const dotenv = require('dotenv');
-const cors = require('cors');
-const connectDB = require('./config/db');
-const logger = require('./utils/logger');
-const routes = require('./routes');
-const productRoutes = require('./routes/productRoutes');
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const connectDB = require("./config/db");
+const logger = require("./utils/logger");
+const routes = require("./routes");
+const productRoutes = require("./routes/productRoutes");
 const inventoryRoutes = require("./routes/inventoryRoutes");
 const messageRoutes = require("./routes/message.routes");
 const categoryRoutes = require("./routes/categoryRoutes");
@@ -26,20 +26,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api', routes);
-app.use('/api/products', productRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use("/api/messages", messageRoutes);
-app.use("/api/reviews", reviewRoutes);
-app.use("/api/disputes", disputeRoutes);
+app.use("/", routes);
+app.use("/products", productRoutes);
+app.use("/inventory", inventoryRoutes);
+app.use("/categories", categoryRoutes);
+app.use("/messages", messageRoutes);
+app.use("/reviews", reviewRoutes);
+app.use("/disputes", disputeRoutes);
 // Error handling middleware
 app.use((err, req, res, next) => {
   logger.error(err.stack);
   res.status(500).json({
     success: false,
-    message: 'Server Error',
-    error: process.env.NODE_ENV === 'production' ? {} : err
+    message: "Server Error",
+    error: process.env.NODE_ENV === "production" ? {} : err,
   });
 });
 

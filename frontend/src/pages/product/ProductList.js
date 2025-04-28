@@ -22,20 +22,20 @@ export default function ProductList() {
   useEffect(() => {
     if (!sellerId) return;
 
-    fetch(`http://localhost:5000/api/products?sellerId=${sellerId}`)
-      .then(res => res.json())
-      .then(data => setProducts(data))
-      .catch(err => console.error(err));
+    fetch(`http://localhost:9999/products?sellerId=${sellerId}`)
+      .then((res) => res.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.error(err));
   }, [sellerId]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/categories")
-      .then(res => res.json())
-      .then(data => setCategories(data))
-      .catch(err => console.error(err));
+    fetch("http://localhost:9999/categories")
+      .then((res) => res.json())
+      .then((data) => setCategories(data))
+      .catch((err) => console.error(err));
   }, []);
 
-  const filteredProducts = products.filter(product =>
+  const filteredProducts = products.filter((product) =>
     product.title?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -45,7 +45,7 @@ export default function ProductList() {
         console.error("Seller ID is required but not found.");
         return;
       }
-  
+
       const productData = {
         title: newProduct.title,
         description: newProduct.description,
@@ -54,36 +54,38 @@ export default function ProductList() {
         categoryId: newProduct.categoryId,
         sellerId,
       };
-  
+
       // First, create the product without quantity
-      const res = await fetch("http://localhost:5000/api/products", {
+      const res = await fetch("http://localhost:9999/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(productData),
       });
-  
+
       const data = await res.json();
-  
+
       if (res.ok) {
         // Create the inventory record with quantity
         const inventoryData = {
-          productId: data._id,  // Use product ID from the newly created product
+          productId: data._id, // Use product ID from the newly created product
           quantity: parseInt(newProduct.quantity) || 0,
         };
-  
+
         // Send the inventory data to a separate endpoint
-        await fetch("http://localhost:5000/api/inventory", {
+        await fetch("http://localhost:9999/inventory", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(inventoryData),
         });
-  
+
         // Refresh the product list
-        fetch(`http://localhost:5000/api/products?sellerId=${sellerId}`)
-          .then(res => res.json())
-          .then(data => setProducts(data))
-          .catch(err => console.error("Error fetching updated products:", err));
-  
+        fetch(`http://localhost:9999/products?sellerId=${sellerId}`)
+          .then((res) => res.json())
+          .then((data) => setProducts(data))
+          .catch((err) =>
+            console.error("Error fetching updated products:", err)
+          );
+
         setShowModal(false);
         setNewProduct({
           title: "",
@@ -100,8 +102,7 @@ export default function ProductList() {
       console.error("Error adding product:", err);
     }
   };
-  
-  
+
   return (
     <>
       {/* HEADER + SEARCH */}
@@ -129,19 +130,25 @@ export default function ProductList() {
                   {searchQuery.length > 0 && (
                     <div className="absolute bg-white max-w-[910px] w-full z-20 left-0 top-12 border p-1">
                       {filteredProducts.length > 0 ? (
-                        filteredProducts.map(product => (
+                        filteredProducts.map((product) => (
                           <div key={product._id} className="p-1">
                             <Link
                               to={`/product/${product._id}`}
                               className="flex items-center justify-between w-full cursor-pointer hover:bg-gray-200 p-1 px-2"
                             >
-                              <div className="truncate ml-2">{product.title}</div>
-                              <div className="truncate">${(product.price / 100)}</div>
+                              <div className="truncate ml-2">
+                                {product.title}
+                              </div>
+                              <div className="truncate">
+                                ${product.price / 100}
+                              </div>
                             </Link>
                           </div>
                         ))
                       ) : (
-                        <div className="p-2 text-gray-500">No products found</div>
+                        <div className="p-2 text-gray-500">
+                          No products found
+                        </div>
                       )}
                     </div>
                   )}
@@ -167,16 +174,22 @@ export default function ProductList() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredProducts.length > 0 ? (
-            filteredProducts.map(product => (
-              <Link to={`/product/${product._id}`} key={product._id} className="border p-4 rounded hover:shadow-md">
+            filteredProducts.map((product) => (
+              <Link
+                to={`/product/${product._id}`}
+                key={product._id}
+                className="border p-4 rounded hover:shadow-md"
+              >
                 <img
                   src={product.image || "/placeholder.jpg"}
                   alt={product.title}
                   className="w-full h-40 object-cover mb-2"
                 />
                 <h2 className="font-semibold text-sm">{product.title}</h2>
-                <p className="text-gray-600 text-sm">${(product.price / 100)}</p>
-                <p className="text-xs text-gray-500">{product.quantity} available</p>
+                <p className="text-gray-600 text-sm">${product.price / 100}</p>
+                <p className="text-xs text-gray-500">
+                  {product.quantity} available
+                </p>
               </Link>
             ))
           ) : (
@@ -196,49 +209,71 @@ export default function ProductList() {
               placeholder="Title"
               className="w-full border p-2 rounded"
               value={newProduct.title}
-              onChange={(e) => setNewProduct({ ...newProduct, title: e.target.value })}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, title: e.target.value })
+              }
             />
             <input
               type="number"
               placeholder="Price"
               className="w-full border p-2 rounded"
               value={newProduct.price}
-              onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, price: e.target.value })
+              }
             />
             <input
               type="text"
               placeholder="Image URL"
               className="w-full border p-2 rounded"
               value={newProduct.image}
-              onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, image: e.target.value })
+              }
             />
             <select
               className="w-full border p-2 rounded"
               value={newProduct.categoryId}
-              onChange={(e) => setNewProduct({ ...newProduct, categoryId: e.target.value })}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, categoryId: e.target.value })
+              }
             >
               <option value="">-- Select Category --</option>
-              {categories.map(cat => (
-                <option key={cat._id} value={cat._id}>{cat.name}</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
               ))}
             </select>
             <textarea
               placeholder="Description"
               className="w-full border p-2 rounded"
               value={newProduct.description}
-              onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, description: e.target.value })
+              }
             />
             <input
               type="number"
               placeholder="Quantity"
               className="w-full border p-2 rounded"
               value={newProduct.quantity}
-              onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+              onChange={(e) =>
+                setNewProduct({ ...newProduct, quantity: e.target.value })
+              }
             />
 
             <div className="flex justify-end gap-2">
-              <button className="px-4 py-2 bg-gray-300 rounded" onClick={() => setShowModal(false)}>Cancel</button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded" onClick={handleCreateProduct}>
+              <button
+                className="px-4 py-2 bg-gray-300 rounded"
+                onClick={() => setShowModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+                onClick={handleCreateProduct}
+              >
                 Add
               </button>
             </div>

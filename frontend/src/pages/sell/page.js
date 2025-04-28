@@ -13,7 +13,7 @@ import SubMenu from "../../components/SubMenu";
 const Sell = () => {
   const [activeTab, setActiveTab] = useState("Activity");
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const [totalOnSale, setTotalOnSale] = useState(0)
+  const [totalOnSale, setTotalOnSale] = useState(0);
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showSellerRegistrationModal, setShowSellerRegistrationModal] =
@@ -21,7 +21,7 @@ const Sell = () => {
   const [error, setError] = useState("");
   const [store, setStore] = useState(null);
   const navigate = useNavigate();
-  const userData = localStorage.getItem('currentUser')
+  const userData = localStorage.getItem("currentUser");
 
   // Get user and store data
   useEffect(() => {
@@ -34,14 +34,11 @@ const Sell = () => {
         if (parsedUser.role === "seller") {
           try {
             const token = localStorage.getItem("token");
-            const response = await fetch(
-              "http://localhost:5000/api/auth/store",
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
+            const response = await fetch("http://localhost:9999/auth/store", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
             const data = await response.json();
             if (response.ok) {
               setStore(data.store);
@@ -57,43 +54,50 @@ const Sell = () => {
   }, []);
 
   useEffect(() => {
-      const fetchTotalOnSale = async () => {
-          const token = localStorage.getItem("token") // Assuming token is stored in localStorage
-          try {
-            const response = await fetch(`http://localhost:5000/api/products/seller/${JSON.parse(userData).id}/total-on-sale`)
-            const data = await response.json()
-            if (response.ok) {
-              setTotalOnSale(data.totalDistinctProducts) // Set the total quantity from the response
-            } else {
-              console.error("Failed to fetch total-on-sale:", data.message)
-            }
-          } catch (error) {
-            console.error("Error fetching total-on-sale:", error)
-          }
+    const fetchTotalOnSale = async () => {
+      const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+      try {
+        const response = await fetch(
+          `http://localhost:9999/products/seller/${
+            JSON.parse(userData).id
+          }/total-on-sale`
+        );
+        const data = await response.json();
+        if (response.ok) {
+          setTotalOnSale(data.totalDistinctProducts); // Set the total quantity from the response
+        } else {
+          console.error("Failed to fetch total-on-sale:", data.message);
         }
-  
-      fetchTotalOnSale()
-    }, [])
+      } catch (error) {
+        console.error("Error fetching total-on-sale:", error);
+      }
+    };
+
+    fetchTotalOnSale();
+  }, []);
 
   useEffect(() => {
-      const fetchTotalRevenue = async () => {
-        
-          const token = localStorage.getItem("token") // Assuming token is stored in localStorage
-          try {
-            const response = await fetch(`http://localhost:5000/api/products/seller/${JSON.parse(userData).id}/sold-products`)
-            const data = await response.json()
-            if (response.ok) {
-              setTotalRevenue(data.totalRevenue || 0) // Set the total revenue from the response
-            } else {
-              console.error("Failed to fetch total-revenue:", data.message)
-            }
-          } catch (error) {
-            console.error("Error fetching total-revenue:", error)
-          }
+    const fetchTotalRevenue = async () => {
+      const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+      try {
+        const response = await fetch(
+          `http://localhost:9999/products/seller/${
+            JSON.parse(userData).id
+          }/sold-products`
+        );
+        const data = await response.json();
+        if (response.ok) {
+          setTotalRevenue(data.totalRevenue || 0); // Set the total revenue from the response
+        } else {
+          console.error("Failed to fetch total-revenue:", data.message);
         }
-  
-      fetchTotalRevenue()
-    }, [])
+      } catch (error) {
+        console.error("Error fetching total-revenue:", error);
+      }
+    };
+
+    fetchTotalRevenue();
+  }, []);
 
   // Redirect if not logged in
   useEffect(() => {

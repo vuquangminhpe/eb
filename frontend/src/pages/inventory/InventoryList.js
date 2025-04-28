@@ -19,7 +19,7 @@ export default function InventoryList() {
   useEffect(() => {
     if (!sellerId) return;
 
-    fetch("http://localhost:5000/api/inventory")
+    fetch("http://localhost:9999/inventory")
       .then((res) => res.json())
       .then((data) => {
         const filteredData = data.filter(
@@ -54,7 +54,7 @@ export default function InventoryList() {
 
     try {
       const response = await fetch(
-        `http://localhost:5000/api/inventory/${item.productId._id}`,
+        `http://localhost:9999/inventory/${item.productId._id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

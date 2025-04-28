@@ -8,7 +8,7 @@ const Account = () => {
   const [storeInfo, setStoreInfo] = useState(null); // For seller's store profile
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const apiBaseUrl = "http://localhost:5000/api"; // Your backend API URL
+  const apiBaseUrl = "http://localhost:9999"; // Your backend API URL
 
   // Use useCallback for fetch function to avoid re-creation on every render
   const fetchData = useCallback(async () => {

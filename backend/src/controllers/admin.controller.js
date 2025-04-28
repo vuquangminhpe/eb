@@ -414,8 +414,8 @@ module.exports = {
   getAllOrders: async (req, res) => {
     try {
       const orders = await Order.find()
-        .populate('buyerId')
-        .populate('addressId');
+        .populate("buyerId")
+        .populate("addressId");
       res.status(200).json({
         success: true,
         orders,
@@ -490,7 +490,7 @@ module.exports = {
   // Store Management
   getAllStores: async (req, res) => {
     try {
-      const stores = await Store.find().populate('sellerId');
+      const stores = await Store.find().populate("sellerId");
       res.status(200).json({
         success: true,
         stores,
@@ -511,7 +511,7 @@ module.exports = {
         req.params.id,
         { status: "approved" },
         { new: true }
-      ).populate('sellerId');
+      ).populate("sellerId");
 
       if (!store) {
         return res.status(404).json({
@@ -541,7 +541,7 @@ module.exports = {
         req.params.id,
         { status: "rejected" },
         { new: true }
-      ).populate('sellerId');
+      ).populate("sellerId");
 
       if (!store) {
         return res.status(404).json({
