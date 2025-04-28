@@ -15,6 +15,7 @@ const Inventory = require("./Inventory");
 const Feedback = require("./Feedback");
 const Dispute = require("./Dispute");
 const Store = require("./Store");
+const ShoppingCart = require("./ShoppingCart");
 
 module.exports = {
   User,
@@ -34,4 +35,5 @@ module.exports = {
   Feedback,
   Dispute,
   Store,
+  ShoppingCart,
 };

@@ -10,5 +10,5 @@ router.get("/me", authMiddleware, authController.getCurrentUser);
 router.post("/logout", authMiddleware, authController.logout);
 router.post("/create-store", authMiddleware, authController.createStore);
 router.get("/store", authMiddleware, authController.getStore);
-
+router.get("/users/addresses", authMiddleware, authController.getUserAddresses);
 module.exports = router;

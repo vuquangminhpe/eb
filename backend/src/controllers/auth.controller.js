@@ -362,3 +362,31 @@ exports.GetDataSeller = async (req, res) => {
     });
   }
 };
+
+exports.getUserAddresses = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Find the user's addresses
+    const addresses = await Address.find({ userId });
+
+    if (!addresses) {
+      return res.status(404).json({
+        success: false,
+        message: "No addresses found for this user",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      addresses,
+    });
+  } catch (error) {
+    logger.error("Get user addresses error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error getting user addresses",
+      error: error.message,
+    });
+  }
+};

@@ -12,8 +12,6 @@ export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
   const [addressDetails, setAddressDetails] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  console.log("cartItems", cartItems);
-  console.log("addressDetails", addressDetails);
 
   // Sử dụng useRef để tránh re-render không cần thiết
   const currentUserRef = useRef(
@@ -61,9 +59,11 @@ export default function Checkout() {
       const itemsWithDetails = await Promise.all(
         cartData.flatMap((cartItem) =>
           cartItem.productId.map(async (product) => {
+            console.log("product", product);
+
             try {
               const productResponse = await fetch(
-                `http://localhost:9999/products?id=${product.idProduct}`
+                `http://localhost:9999/products?id=${product.idProduct._id}`
               );
               if (!productResponse.ok) return null;
 
@@ -76,7 +76,7 @@ export default function Checkout() {
                 return {
                   ...productInfo,
                   quantity: parseInt(product.quantity),
-                  idProduct: product.idProduct,
+                  idProduct: product.idProduct._id,
                   cartItemId: cartItem.id,
                 };
               }
@@ -171,6 +171,7 @@ export default function Checkout() {
       0
     );
   }, [cartItems]);
+  console.log("etsaer", cartItems);
 
   // Memoized function để xử lý thanh toán
   const handlePayment = useCallback(async () => {
@@ -192,19 +193,28 @@ export default function Checkout() {
         order_id: orderId,
         user_id: currentUserRef.current.id,
         order_date: new Date().toISOString(),
-        total_amount: parseFloat((getCartTotal() / 100).toFixed(2)),
+        totalAmount: parseFloat((getCartTotal() / 100).toFixed(2)),
         status: "pending",
-        items: cartItems.map((item) => ({
+        cartItems: cartItems.map((item) => ({
           product_name: item.title,
           quantity: item.quantity,
           price: parseFloat((item.price / 100).toFixed(2)),
         })),
+        addressId: "680e5042eec67329e220a354",
+        productId: cartItems.map((item) => ({
+          idProduct: item.idProduct,
+        })),
       };
+      console.log(orderData);
 
       // 1. Lưu đơn hàng mới vào orders
       const orderResponse = await fetch("http://localhost:9999/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+
         body: JSON.stringify(orderData),
       });
 

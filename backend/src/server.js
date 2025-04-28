@@ -13,17 +13,16 @@ const categoryRoutes = require("./routes/categoryRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const disputeRoutes = require("./routes/dispute.routes");
 const shoppingCartRoutes = require("./routes/shippingCartRoutes");
-// Load environment variables
+
+const orderRoutes = require("./routes/order.routes");
 dotenv.config();
 
-// Initialize Express app
 const app = express();
 const server = http.createServer(app);
 
-// Set up Socket.io
 const io = socketIo(server, {
   cors: {
-    origin: "*", // In production, you should restrict this to your frontend domain
+    origin: "*",
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -47,6 +46,7 @@ app.use("/messages", messageRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/disputes", disputeRoutes);
 app.use("/shoppingCart", shoppingCartRoutes);
+app.use("/orders", orderRoutes);
 // Socket.io connection handling
 const connectedUsers = {};
 
