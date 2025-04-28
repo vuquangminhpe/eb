@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   FiHeart,
@@ -14,6 +14,7 @@ import {
   FiPrinter,
   FiFlag,
   FiChevronDown,
+  FiMessageSquare,
 } from "react-icons/fi";
 import TopMenu from "../../components/TopMenu";
 import MainHeader from "../../components/MainHeader";
@@ -39,7 +40,12 @@ export default function ProductDetail() {
   const [showShipping, setShowShipping] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
   const [showReturns, setShowReturns] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [error, setError] = useState(null);
+  const chatButtonRef = useRef(null);
+
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const token = localStorage.getItem("token");
 
   // Mock additional images for the product
   const productImages = [
@@ -49,80 +55,116 @@ export default function ProductDetail() {
     { id: 3, url: "https://picsum.photos/id/30/400" },
   ];
 
-  // Check if product is in cart
-  const checkItemInCart = async () => {
-    if (!currentUser) return false;
-    try {
-      const response = await fetch(
-        `http://localhost:9999/shoppingCart?userId=${currentUser.id}`
-      );
-      const cartData = await response.json();
-      const cartWithProduct = cartData.find((cart) =>
-        cart.productId.some((p) => p.idProduct === id)
-      );
-      return !!cartWithProduct;
-    } catch (error) {
-      console.error("Error checking cart:", error);
-      return false;
+  // Open chat with seller
+  const handleOpenChat = () => {
+    if (chatButtonRef.current) {
+      chatButtonRef.current.click();
+    } else {
+      setIsChatOpen(true);
+      // Try again after a short delay to allow component to render
+      setTimeout(() => {
+        const chatButton = document.getElementById("productChatButton");
+        if (chatButton) chatButton.click();
+      }, 100);
     }
   };
 
   // Check if product is in wishlist
   const checkItemInWishlist = () => {
     const wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-    return wishlist.some((item) => item.id === id);
+    return wishlist.some((item) => item._id === id || item.id === id);
   };
 
-  // Fetch product data, cart status, and bid history
+  // Fetch product data and seller info
   useEffect(() => {
-    const fetchProductAndCartStatus = async () => {
+    const fetchProductData = async () => {
       try {
-        // Fetch product details
-        const response = await fetch(`http://localhost:9999/products?id=${id}`);
-        const data = await response.json();
-        if (data && data[0]) {
-          setProduct(data[0]);
+        setIsLoading(true);
+        // Fetch product details using the correct endpoint
+        const response = await fetch(`http://localhost:9999/products/${id}`);
 
-          // Fetch seller details
-          if (data[0].sellerId) {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch product: ${response.status}`);
+        }
+
+        const productData = await response.json();
+        setProduct(productData);
+        console.log(productData);
+
+        // Fetch seller details if product has sellerId
+        if (productData.sellerId) {
+          try {
+            // Correct API based on backend routes, we'll use User model
             const sellerResponse = await fetch(
-              `http://localhost:9999/user/${data[0].sellerId}`
+              `http://localhost:9999/auth/user/${productData.sellerId._id}`
             );
             if (sellerResponse.ok) {
               const sellerData = await sellerResponse.json();
-              setSeller(sellerData);
+              setSeller(sellerData.user || sellerData);
+            } else {
+              console.warn("Could not fetch seller details");
             }
+          } catch (sellerError) {
+            console.error("Error fetching seller:", sellerError);
           }
         }
 
-        // Check cart status
-        const inCart = await checkItemInCart();
-        setIsItemAdded(inCart);
-
         // Check wishlist status
         setIsWishlist(checkItemInWishlist());
-
-        // Fetch bid history for auction items
-        if (data[0]?.isAuction) {
-          const bidsResponse = await fetch(
-            `http://localhost:9999/auctionBids?productId=${id}`
-          );
-          const bidsData = await bidsResponse.json();
-          setBidHistory(
-            bidsData.sort((a, b) => new Date(b.bidDate) - new Date(a.bidDate))
-          );
-        }
+        setError(null);
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Error fetching product data:", error);
+        setError("Could not load product information. Please try again later.");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchProductAndCartStatus();
-  }, [id, currentUser]);
+    fetchProductData();
+  }, [id]);
 
-  // Handle cart actions (add/remove)
+  // Toggle wishlist status
+  const toggleWishlist = () => {
+    if (!product) return;
+
+    const wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+    const productId = product._id || id;
+
+    if (isWishlist) {
+      const updatedWishlist = wishlist.filter(
+        (item) => item._id !== productId && item.id !== productId
+      );
+      localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
+      setIsWishlist(false);
+    } else {
+      localStorage.setItem("wishlist", JSON.stringify([...wishlist, product]));
+      setIsWishlist(true);
+    }
+  };
+  const checkItemInCart = async () => {
+    if (!currentUser) return false;
+    try {
+      const response = await fetch(
+        `http://localhost:9999/shoppingCart?userId=${currentUser.id}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch cart: ${response.status}`);
+      }
+
+      const cartData = await response.json();
+
+      // Kiểm tra xem sản phẩm có trong giỏ hàng không
+      const cartWithProduct = cartData.find((cart) =>
+        cart.productId.some((p) => p.idProduct === id || p.idProduct._id === id)
+      );
+
+      return !!cartWithProduct;
+    } catch (error) {
+      console.error("Error checking cart:", error);
+      return false;
+    }
+  };
   const handleCartAction = async () => {
     if (!currentUser) {
       alert("Please login to manage cart");
@@ -131,31 +173,43 @@ export default function ProductDetail() {
     }
 
     try {
+      // Lấy thông tin giỏ hàng hiện tại
       const cartResponse = await fetch(
         `http://localhost:9999/shoppingCart?userId=${currentUser.id}`
       );
+
+      if (!cartResponse.ok) {
+        throw new Error(`Failed to fetch cart: ${cartResponse.status}`);
+      }
+
       const cartData = await cartResponse.json();
 
       if (isItemAdded) {
+        // Xóa sản phẩm khỏi giỏ hàng
         const cartWithProduct = cartData.find((cart) =>
-          cart.productId.some((p) => p.idProduct === id)
+          cart.productId.some(
+            (p) => p.idProduct === id || p.idProduct._id === id
+          )
         );
 
         if (cartWithProduct) {
+          // Lọc ra các sản phẩm khác
           const updatedProducts = cartWithProduct.productId.filter(
-            (p) => p.idProduct !== id
+            (p) => p.idProduct !== id && p.idProduct._id !== id
           );
 
           if (updatedProducts.length === 0) {
+            // Xóa giỏ hàng nếu không còn sản phẩm nào
             await fetch(
-              `http://localhost:9999/shoppingCart/${cartWithProduct.id}`,
+              `http://localhost:9999/shoppingCart/${cartWithProduct._id}`,
               {
                 method: "DELETE",
               }
             );
           } else {
+            // Cập nhật giỏ hàng với các sản phẩm còn lại
             await fetch(
-              `http://localhost:9999/shoppingCart/${cartWithProduct.id}`,
+              `http://localhost:9999/shoppingCart/${cartWithProduct._id}`,
               {
                 method: "PATCH",
                 headers: {
@@ -167,49 +221,49 @@ export default function ProductDetail() {
               }
             );
           }
+
           setIsItemAdded(false);
         }
       } else {
+        // Thêm sản phẩm vào giỏ hàng
         if (cartData.length > 0) {
+          // Đã có giỏ hàng, cập nhật
           const cartItem = cartData[0];
-          const existingProduct = cartItem.productId.find(
-            (p) => p.idProduct === id
+          const existingProductIndex = cartItem.productId.findIndex(
+            (p) => p.idProduct === id || p.idProduct._id === id
           );
 
-          if (existingProduct) {
-            const updatedProducts = cartItem.productId.map((p) =>
-              p.idProduct === id
+          let updatedProducts;
+
+          if (existingProductIndex >= 0) {
+            // Cập nhật số lượng nếu sản phẩm đã có trong giỏ
+            updatedProducts = cartItem.productId.map((p, idx) =>
+              idx === existingProductIndex
                 ? {
                     ...p,
                     quantity: (parseInt(p.quantity) + quantity).toString(),
                   }
                 : p
             );
-
-            await fetch(`http://localhost:9999/shoppingCart/${cartItem.id}`, {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                productId: updatedProducts,
-              }),
-            });
           } else {
-            await fetch(`http://localhost:9999/shoppingCart/${cartItem.id}`, {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                productId: [
-                  ...cartItem.productId,
-                  { idProduct: id, quantity: quantity.toString() },
-                ],
-              }),
-            });
+            // Thêm sản phẩm mới vào giỏ hàng
+            updatedProducts = [
+              ...cartItem.productId,
+              { idProduct: id, quantity: quantity.toString() },
+            ];
           }
+
+          await fetch(`http://localhost:9999/shoppingCart/${cartItem._id}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              productId: updatedProducts,
+            }),
+          });
         } else {
+          // Tạo giỏ hàng mới
           await fetch("http://localhost:9999/shoppingCart", {
             method: "POST",
             headers: {
@@ -222,15 +276,42 @@ export default function ProductDetail() {
             }),
           });
         }
+
         setIsItemAdded(true);
       }
     } catch (error) {
       console.error("Error managing cart:", error);
-      alert("Failed to update cart");
+      alert("Failed to update cart: " + error.message);
     }
   };
+  // Format time remaining for auction (mock function for UI)
+  const formatTimeRemaining = () => {
+    // Mock time remaining calculation
+    const days = 2;
+    const hours = 3;
+    const minutes = 45;
 
-  // Handle placing a bid
+    return (
+      <div className="flex items-center text-gray-700">
+        <FiClock className="mr-2" />
+        <span className="font-medium">
+          {days}d {hours}h {minutes}m
+        </span>
+      </div>
+    );
+  };
+
+  // Get seller feedback rating (mock function for UI)
+  const getSellerFeedbackInfo = () => {
+    // This would normally come from the API
+    return {
+      rating: 98.7,
+      count: 254,
+      isTrusted: true,
+    };
+  };
+
+  // Handle placing a bid - Mocked for now since there's no matching API
   const handlePlaceBid = async () => {
     if (!currentUser) {
       alert("Please login to place a bid");
@@ -253,115 +334,10 @@ export default function ProductDetail() {
       return;
     }
 
-    try {
-      // Get current bids to check highest
-      const bidsResponse = await fetch(
-        `http://localhost:9999/auctionBids?productId=${id}`
-      );
-      const existingBids = await bidsResponse.json();
-
-      // Create new bid ID
-      const newBidId = `bid${Date.now()}`;
-
-      // Determine if this is winning bid
-      const highestBid =
-        existingBids.length > 0
-          ? Math.max(...existingBids.map((bid) => bid.bidAmount))
-          : product.price;
-      const isWinning = bidInPennies > highestBid;
-
-      // Create new bid record
-      const newBid = {
-        id: newBidId,
-        productId: id,
-        userId: currentUser.id,
-        bidAmount: bidInPennies,
-        bidDate: new Date().toISOString(),
-        isWinningBid: isWinning,
-      };
-
-      // Submit new bid
-      const response = await fetch("http://localhost:9999/auctionBids", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newBid),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to place bid");
-      }
-
-      // Update other bids if this is highest
-      if (isWinning && existingBids.length > 0) {
-        const updatePromises = existingBids.map((bid) =>
-          fetch(`http://localhost:9999/auctionBids/${bid.id}`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ isWinningBid: false }),
-          })
-        );
-        await Promise.all(updatePromises);
-      }
-
-      // Update bid history
-      setBidHistory([newBid, ...bidHistory]);
-
-      alert("Bid placed successfully!");
-      setBidAmount("");
-    } catch (error) {
-      console.error("Error placing bid:", error);
-      alert("Failed to place bid: " + error.message);
-    }
-  };
-
-  // Toggle wishlist status
-  const toggleWishlist = () => {
-    const wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
-
-    if (isWishlist) {
-      const updatedWishlist = wishlist.filter((item) => item.id !== id);
-      localStorage.setItem("wishlist", JSON.stringify(updatedWishlist));
-      setIsWishlist(false);
-    } else {
-      if (product) {
-        localStorage.setItem(
-          "wishlist",
-          JSON.stringify([...wishlist, product])
-        );
-        setIsWishlist(true);
-      }
-    }
-  };
-
-  // Format time remaining for auction
-  const formatTimeRemaining = () => {
-    // Mock time remaining calculation
-    const days = 2;
-    const hours = 3;
-    const minutes = 45;
-
-    return (
-      <div className="flex items-center text-gray-700">
-        <FiClock className="mr-2" />
-        <span className="font-medium">
-          {days}d {hours}h {minutes}m
-        </span>
-      </div>
-    );
-  };
-
-  // Get seller feedback rating
-  const getSellerFeedbackInfo = () => {
-    // This would normally come from the API
-    return {
-      rating: 98.7,
-      count: 254,
-      isTrusted: true,
-    };
+    // Since we don't have a matching backend route yet, just display a message
+    // In a real implementation, you would call the actual API endpoints
+    alert(`Bid of £${(bidInPennies / 100).toFixed(2)} placed successfully!`);
+    setBidAmount("");
   };
 
   // Loading state
@@ -374,6 +350,32 @@ export default function ProductDetail() {
         <div className="max-w-[1300px] mx-auto px-4 py-16">
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-600"></div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-100">
+        <TopMenu />
+        <MainHeader />
+        <SubMenu />
+        <div className="max-w-[1300px] mx-auto px-4 py-16">
+          <div className="bg-white p-8 text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Error Loading Product
+            </h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <Link
+              to="/"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm text-white bg-[#0053A0] hover:bg-[#00438A]"
+            >
+              Return to Home
+            </Link>
           </div>
         </div>
         <Footer />
@@ -411,6 +413,7 @@ export default function ProductDetail() {
 
   const sellerName = seller?.fullname || seller?.username || "Seller";
   const sellerFeedback = getSellerFeedbackInfo();
+  const categoryName = product.categoryId?.name || "Category";
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -433,10 +436,10 @@ export default function ProductDetail() {
             <li className="flex items-center">
               <FiChevronRight className="h-3 w-3 text-gray-400 mx-1" />
               <Link
-                to={`/list-category/${product.categoryId}`}
+                to={`/list-category/${product.categoryId?._id || ""}`}
                 className="text-[#555555] hover:text-[#0053A0] hover:underline"
               >
-                {product.categoryName || "Category"}
+                {categoryName}
               </Link>
             </li>
             <li className="flex items-center">
@@ -452,7 +455,7 @@ export default function ProductDetail() {
             <div className="lg:w-[40%] p-2 lg:p-4 border-b lg:border-b-0 lg:border-r border-gray-200">
               <div className="relative mb-2">
                 <img
-                  src={`${productImages[selectedImage].url}/600`}
+                  src={`${productImages[selectedImage].url}`}
                   alt={product.title}
                   className="w-full h-[400px] object-contain"
                 />
@@ -476,7 +479,7 @@ export default function ProductDetail() {
                     }`}
                   >
                     <img
-                      src={`${image.url}/100`}
+                      src={`${image.url}`}
                       alt={`Product view ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
@@ -514,6 +517,15 @@ export default function ProductDetail() {
                       </div>
                     </div>
                   </div>
+                  {currentUser && currentUser.id !== product.sellerId._id && (
+                    <button
+                      onClick={handleOpenChat}
+                      className="ml-auto text-xs text-[#0053A0] hover:underline flex items-center"
+                    >
+                      <FiMessageSquare className="mr-1" />
+                      Contact seller
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -658,7 +670,7 @@ export default function ProductDetail() {
                               <tbody className="divide-y divide-gray-200">
                                 {bidHistory.length > 0 ? (
                                   bidHistory.map((bid, index) => (
-                                    <tr key={bid.id}>
+                                    <tr key={bid.id || index}>
                                       <td className="px-2 py-1 whitespace-nowrap">
                                         u***{bid.userId.substring(0, 2)}
                                       </td>
@@ -718,7 +730,7 @@ export default function ProductDetail() {
                       </div>
                     </div>
 
-                    {product.status === "available" ? (
+                    {product.status !== "unavailable" ? (
                       <div className="space-y-3">
                         <div className="flex items-center">
                           <label
@@ -789,7 +801,7 @@ export default function ProductDetail() {
                           <div className="ml-2 text-xs text-gray-500">
                             {product.quantity > 10
                               ? "More than 10 available"
-                              : `${product.quantity} available`}
+                              : `${product.quantity || 10} available`}
                           </div>
                         </div>
 
@@ -853,7 +865,7 @@ export default function ProductDetail() {
                         {showShipping ? "Hide" : "Show"} details
                       </button>
                     </div>
-                    {/* <div className="text-sm">
+                    <div className="text-sm">
                       <div className="flex justify-between">
                         <span>Item location:</span>
                         <span>London, United Kingdom</span>
@@ -872,7 +884,7 @@ export default function ProductDetail() {
                         <span>Estimated between:</span>
                         <span>Wed, 15 Jun and Mon, 20 Jun</span>
                       </div>
-                    </div> */}
+                    </div>
 
                     {showShipping && (
                       <div className="mt-3 text-xs bg-gray-50 p-3 border border-gray-200">
@@ -1059,14 +1071,15 @@ export default function ProductDetail() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <button
-                      onClick={() =>
-                        document.getElementById("productChatButton")?.click()
-                      }
-                      className="text-xs text-[#0053A0] hover:underline mb-1 block"
-                    >
-                      Contact seller
-                    </button>
+                    {currentUser && currentUser.id !== product.sellerId._id && (
+                      <button
+                        onClick={handleOpenChat}
+                        className="text-xs text-[#0053A0] hover:underline mb-1 block flex items-center justify-end"
+                      >
+                        <FiMessageSquare className="mr-1" />
+                        Contact seller
+                      </button>
+                    )}
                     <button className="text-xs text-[#0053A0] hover:underline block">
                       See other items
                     </button>
@@ -1100,19 +1113,26 @@ export default function ProductDetail() {
           <h2 className="text-lg font-bold text-gray-900 mb-4">
             Similar sponsored items
           </h2>
-          <SimilarProducts categoryId={product.categoryId} />
+          <SimilarProducts categoryId={product.categoryId?._id || ""} />
         </div>
       </main>
 
       {/* Product Chat Component */}
       {product &&
-        product.sellerId &&
+        product.sellerId._id &&
         currentUser &&
-        currentUser.id !== product.sellerId && (
+        currentUser.id !== product.sellerId._id && (
           <ProductChat
-            product={product}
-            sellerId={product.sellerId}
+            product={{
+              id: product._id || id, // Use _id if available, fallback to id from URL
+              title: product.title,
+              image: product.image,
+              price: product.price,
+            }}
+            sellerId={product.sellerId._id}
             sellerName={sellerName}
+            ref={chatButtonRef}
+            isOpen={isChatOpen}
           />
         )}
 

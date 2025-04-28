@@ -10,7 +10,7 @@ class SocketService {
   }
 
   connect(userId) {
-    this.socket = io("http://localhost:5000");
+    this.socket = io("http://localhost:9999");
     this.socket.on("connect", () => {
       console.log("Socket connected!");
       this.connected = true;

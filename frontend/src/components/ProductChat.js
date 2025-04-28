@@ -5,6 +5,9 @@ import {
   FiX,
   FiMinimize2,
   FiMaximize2,
+  FiExternalLink,
+  FiCheckCircle,
+  FiClock,
 } from "react-icons/fi";
 import socketService from "../utils/socketService";
 
@@ -18,14 +21,18 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [isSellerTyping, setIsSellerTyping] = useState(false);
   const [typingTimeout, setTypingTimeout] = useState(null);
+  const [sellerInfo, setSellerInfo] = useState(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [showScrollDown, setShowScrollDown] = useState(false);
 
   const currentUser = JSON.parse(localStorage.getItem("currentUser"));
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = (behavior = "smooth") => {
+    messagesEndRef.current?.scrollIntoView({ behavior });
   };
 
   // Handle socket connection
@@ -69,6 +76,18 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
             if (exists) return prevMessages;
             return [...prevMessages, message];
           });
+
+          // Mark message as read if it's to the current user
+          if (message.receiverId === currentUser.id && message._id) {
+            fetch(`http://localhost:9999/messages/${message._id}/read`, {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }).catch((err) =>
+              console.error("Error marking message as read:", err)
+            );
+          }
         }
       }
     );
@@ -85,23 +104,62 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
       }
     );
 
+    // Fetch seller info
+    const fetchSellerInfo = async () => {
+      try {
+        const response = await fetch(`http://localhost:9999/users/${sellerId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setSellerInfo(data);
+        }
+      } catch (err) {
+        console.error("Error fetching seller info:", err);
+      }
+    };
+
+    fetchSellerInfo();
+
     // Fetch conversation history
     const fetchMessages = async () => {
-      setLoading(true);
+      setIsLoadingHistory(true);
       try {
         const response = await fetch(
-          `http://localhost:9999/messages/conversation/${currentUser.id}/${sellerId}?productId=${product.id}`
+          `http://localhost:9999/messages/conversation/${currentUser.id}/${sellerId}?productId=${product.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
         if (!response.ok) throw new Error("Failed to fetch messages");
 
         const data = await response.json();
         setMessages(data);
+
+        // Mark unread messages as read
+        const unreadMessages = data.filter(
+          (msg) => !msg.read && msg.senderId === sellerId
+        );
+
+        if (unreadMessages.length > 0) {
+          const markReadPromises = unreadMessages.map((msg) =>
+            fetch(`http://localhost:9999/messages/${msg._id}/read`, {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            })
+          );
+
+          await Promise.all(markReadPromises);
+        }
+
         setError(null);
       } catch (err) {
         console.error("Error fetching messages:", err);
         setError("Failed to load message history.");
       } finally {
-        setLoading(false);
+        setIsLoadingHistory(false);
       }
     };
 
@@ -117,8 +175,27 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
-    scrollToBottom();
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
   }, [messages]);
+
+  // Monitor scroll position to show "scroll to bottom" button
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setShowScrollDown(!isNearBottom);
+    };
+
+    container.addEventListener("scroll", handleScroll);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   // Focus input when opening chat
   useEffect(() => {
@@ -174,23 +251,65 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
     return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const timeAgo = (dateStr) => {
+  const formatDate = (dateStr) => {
     if (!dateStr) return "";
 
-    const now = new Date();
     const date = new Date(dateStr);
-    const diff = Math.floor((now - date) / (1000 * 60));
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
 
-    if (diff < 1) return "just now";
-    if (diff < 60) return `${diff} min ago`;
+    // Same day - show only time
+    if (date.toDateString() === today.toDateString()) {
+      return "Today";
+    }
 
-    const hours = Math.floor(diff / 60);
-    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    // Yesterday - show "Yesterday"
+    if (date.toDateString() === yesterday.toDateString()) {
+      return "Yesterday";
+    }
 
-    const days = Math.floor(hours / 24);
-    if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+    // Within 7 days - show day name
+    const diffDays = Math.round((today - date) / (1000 * 60 * 60 * 24));
+    if (diffDays < 7) {
+      return date.toLocaleDateString(undefined, { weekday: "long" });
+    }
 
+    // Older - show date
     return date.toLocaleDateString();
+  };
+
+  const groupMessagesByDate = (messages) => {
+    const groups = [];
+    let currentDate = null;
+    let currentMessages = [];
+
+    messages.forEach((msg) => {
+      const msgDate = new Date(msg.createdAt || msg.timestamp);
+      const dateString = msgDate.toDateString();
+
+      if (dateString !== currentDate) {
+        if (currentMessages.length > 0) {
+          groups.push({
+            date: currentDate,
+            messages: currentMessages,
+          });
+        }
+        currentDate = dateString;
+        currentMessages = [msg];
+      } else {
+        currentMessages.push(msg);
+      }
+    });
+
+    if (currentMessages.length > 0) {
+      groups.push({
+        date: currentDate,
+        messages: currentMessages,
+      });
+    }
+
+    return groups;
   };
 
   if (!currentUser) {
@@ -214,6 +333,7 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
       {/* Chat button */}
       {!isOpen && (
         <button
+          id="productChatButton"
           onClick={() => setIsOpen(true)}
           className="fixed bottom-4 right-4 bg-[#0053A0] hover:bg-[#00438A] text-white p-3 rounded-full shadow-lg z-50 flex items-center justify-center"
           aria-label="Chat with seller"
@@ -239,7 +359,7 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
               {!isMinimized && (
                 <div>
                   <h3 className="font-medium text-sm">
-                    {sellerName || "Seller"}
+                    {sellerInfo?.fullname || sellerName || "Seller"}
                   </h3>
                   <p className="text-xs text-white/70 truncate max-w-[180px]">
                     About: {product.title}
@@ -248,7 +368,7 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
               )}
               {isMinimized && (
                 <h3 className="font-medium text-sm truncate">
-                  Chat with {sellerName || "Seller"}
+                  Chat with {sellerInfo?.fullname || sellerName || "Seller"}
                 </h3>
               )}
             </div>
@@ -283,7 +403,7 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
                   alt={product.title}
                   className="w-12 h-12 object-cover rounded mr-3"
                 />
-                <div>
+                <div className="flex-1">
                   <p className="text-sm font-medium line-clamp-1">
                     {product.title}
                   </p>
@@ -291,10 +411,21 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
                     £{(product.price / 100).toFixed(2)}
                   </p>
                 </div>
+                <a
+                  href={`/product/${product.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 p-1 hover:bg-blue-50 rounded"
+                >
+                  <FiExternalLink size={16} />
+                </a>
               </div>
 
               {/* Messages area */}
-              <div className="flex-grow overflow-y-auto p-4 bg-gray-50">
+              <div
+                ref={messagesContainerRef}
+                className="flex-grow overflow-y-auto p-4 bg-gray-50"
+              >
                 {loading && messages.length === 0 ? (
                   <div className="flex justify-center items-center h-full">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0053A0]"></div>
@@ -307,41 +438,81 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
                   <div className="text-center text-gray-500 mt-4">
                     <p>No messages yet.</p>
                     <p className="text-sm">
-                      Start the conversation with {sellerName || "the seller"}!
+                      Start the conversation with{" "}
+                      {sellerInfo?.fullname || sellerName || "the seller"}!
                     </p>
                   </div>
                 ) : (
                   <>
-                    {messages.map((msg, index) => {
-                      const isFromCurrentUser = msg.senderId === currentUser.id;
-                      return (
-                        <div
-                          key={msg._id || index}
-                          className={`mb-3 flex ${
-                            isFromCurrentUser ? "justify-end" : "justify-start"
-                          }`}
-                        >
-                          <div
-                            className={`max-w-[80%] p-3 rounded-lg ${
-                              isFromCurrentUser
-                                ? "bg-[#0053A0] text-white rounded-br-none"
-                                : "bg-gray-200 text-gray-800 rounded-bl-none"
-                            }`}
-                          >
-                            <p className="text-sm">{msg.content}</p>
-                            <span
-                              className={`text-xs mt-1 block ${
+                    {groupMessagesByDate(messages).map((group, groupIndex) => (
+                      <div key={groupIndex} className="mb-4">
+                        <div className="text-center mb-3">
+                          <span className="text-xs bg-gray-200 px-2 py-1 rounded-full text-gray-600">
+                            {formatDate(group.date)}
+                          </span>
+                        </div>
+
+                        {group.messages.map((msg, index) => {
+                          const isFromCurrentUser =
+                            msg.senderId === currentUser.id;
+                          const showReadStatus =
+                            isFromCurrentUser &&
+                            index === group.messages.length - 1 &&
+                            groupIndex ===
+                              groupMessagesByDate(messages).length - 1;
+
+                          return (
+                            <div
+                              key={msg._id || index}
+                              className={`mb-3 flex ${
                                 isFromCurrentUser
-                                  ? "text-blue-100"
-                                  : "text-gray-500"
+                                  ? "justify-end"
+                                  : "justify-start"
                               }`}
                             >
-                              {formatTime(msg.createdAt || msg.timestamp)}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
+                              <div
+                                className={`max-w-[80%] p-3 rounded-lg ${
+                                  isFromCurrentUser
+                                    ? "bg-[#0053A0] text-white rounded-br-none"
+                                    : "bg-gray-200 text-gray-800 rounded-bl-none"
+                                }`}
+                              >
+                                <p className="text-sm">{msg.content}</p>
+                                <div className="flex items-center justify-end text-xs mt-1">
+                                  <span
+                                    className={`${
+                                      isFromCurrentUser
+                                        ? "text-blue-100"
+                                        : "text-gray-500"
+                                    }`}
+                                  >
+                                    {formatTime(msg.createdAt || msg.timestamp)}
+                                  </span>
+
+                                  {showReadStatus && (
+                                    <span className="ml-1">
+                                      {msg.read ? (
+                                        <span className="flex items-center text-blue-100">
+                                          <FiCheckCircle
+                                            size={12}
+                                            className="ml-1"
+                                          />
+                                        </span>
+                                      ) : (
+                                        <span className="flex items-center text-blue-100">
+                                          <FiClock size={12} className="ml-1" />
+                                        </span>
+                                      )}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ))}
+
                     {isSellerTyping && (
                       <div className="flex justify-start mb-2">
                         <div className="bg-gray-100 text-gray-500 p-2 rounded-lg text-sm">
@@ -355,6 +526,29 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
                     )}
                     <div ref={messagesEndRef} />
                   </>
+                )}
+
+                {/* Scroll to bottom button */}
+                {showScrollDown && (
+                  <button
+                    className="absolute bottom-20 right-4 bg-gray-200 hover:bg-gray-300 rounded-full p-2 shadow-md"
+                    onClick={() => scrollToBottom("auto")}
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                      />
+                    </svg>
+                  </button>
                 )}
               </div>
 

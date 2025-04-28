@@ -12,7 +12,7 @@ const messageRoutes = require("./routes/message.routes");
 const categoryRoutes = require("./routes/categoryRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const disputeRoutes = require("./routes/dispute.routes");
-
+const shoppingCartRoutes = require("./routes/shippingCartRoutes");
 // Load environment variables
 dotenv.config();
 
@@ -45,7 +45,7 @@ app.use("/categories", categoryRoutes);
 app.use("/messages", messageRoutes);
 app.use("/reviews", reviewRoutes);
 app.use("/disputes", disputeRoutes);
-
+app.use("/shoppingCart", shoppingCartRoutes);
 // Socket.io connection handling
 const connectedUsers = {};
 
@@ -160,7 +160,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 9999;
 server.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
 });
