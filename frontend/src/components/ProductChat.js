@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   FiSend,
   FiMessageSquare,
@@ -24,45 +24,152 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
   const [sellerInfo, setSellerInfo] = useState(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [showScrollDown, setShowScrollDown] = useState(false);
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
 
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  // Refs để tránh re-render không cần thiết
+  const currentUserRef = useRef(
+    JSON.parse(localStorage.getItem("currentUser"))
+  );
+  const messagesRef = useRef(messages);
+  const isOpenRef = useRef(isOpen);
+  const productIdRef = useRef(product.id);
+  const sellerIdRef = useRef(sellerId);
+
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const fetchTimeoutRef = useRef(null);
+
+  // Cập nhật refs khi state thay đổi
+  useEffect(() => {
+    messagesRef.current = messages;
+    isOpenRef.current = isOpen;
+    productIdRef.current = product.id;
+    sellerIdRef.current = sellerId;
+  }, [messages, isOpen, product.id, sellerId]);
 
   // Scroll to bottom of messages
-  const scrollToBottom = (behavior = "smooth") => {
+  const scrollToBottom = useCallback((behavior = "smooth") => {
     messagesEndRef.current?.scrollIntoView({ behavior });
-  };
+  }, []);
+
+  // Memoized function để fetch tin nhắn
+  const fetchMessages = useCallback(async () => {
+    if (!currentUserRef.current || !isOpenRef.current) return;
+
+    // Tránh fetch nhiều lần trong thời gian ngắn
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
+
+    fetchTimeoutRef.current = setTimeout(async () => {
+      setIsLoadingHistory(true);
+      try {
+        const response = await fetch(
+          `http://localhost:9999/messages/conversation/${currentUserRef.current.id}/${sellerIdRef.current}?productId=${productIdRef.current}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to fetch messages");
+
+        const data = await response.json();
+
+        // So sánh dữ liệu mới với hiện tại để tránh re-render không cần thiết
+        if (JSON.stringify(data) !== JSON.stringify(messagesRef.current)) {
+          setMessages(data);
+        }
+
+        // Mark unread messages as read
+        const unreadMessages = data.filter(
+          (msg) => !msg.read && msg.senderId === sellerIdRef.current
+        );
+
+        if (unreadMessages.length > 0) {
+          await Promise.all(
+            unreadMessages.map((msg) =>
+              fetch(`http://localhost:9999/messages/${msg._id}/read`, {
+                method: "PATCH",
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+              })
+            )
+          );
+        }
+
+        setError(null);
+        setInitialDataLoaded(true);
+      } catch (err) {
+        console.error("Error fetching messages:", err);
+        setError("Failed to load message history.");
+      } finally {
+        setIsLoadingHistory(false);
+        fetchTimeoutRef.current = null;
+      }
+    }, 300); // Đợi 300ms để tránh gọi nhiều lần
+  }, []);
+
+  // Memoized function to fetch seller info
+  const fetchSellerInfo = useCallback(async () => {
+    if (!sellerIdRef.current) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:9999/users/${sellerIdRef.current}`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        if (data && JSON.stringify(data) !== JSON.stringify(sellerInfo)) {
+          setSellerInfo(data);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching seller info:", err);
+    }
+  }, [sellerInfo]);
 
   // Handle socket connection
   useEffect(() => {
-    if (!isOpen || !currentUser) return;
+    if (!isOpen || !currentUserRef.current) return;
 
-    // Connect socket if not already connected
-    if (!socketService.isConnected()) {
-      socketService.connect(currentUser.id);
-    }
+    let isMounted = true;
 
-    // Handle connection status changes
-    const removeConnectionListener = socketService.addConnectionListener(
-      (isConnected, error) => {
-        setIsSocketConnected(isConnected);
-        if (!isConnected && error) {
-          setError("Chat connection lost. Please refresh the page.");
-        } else if (isConnected) {
-          setError(null);
+    // Tạo các biến cleanup
+    let removeConnectionListener = () => {};
+    let removeMessageListener = () => {};
+    let removeTypingListener = () => {};
+
+    const setupSocket = async () => {
+      // Connect socket if not already connected
+      await socketService.connect(currentUserRef.current.id);
+
+      if (!isMounted) return;
+
+      // Handle connection status changes
+      removeConnectionListener = socketService.addConnectionListener(
+        (isConnected, error) => {
+          if (!isMounted) return;
+          setIsSocketConnected(isConnected);
+          if (!isConnected && error) {
+            setError("Chat connection lost. Please try again later.");
+          } else if (isConnected) {
+            setError(null);
+          }
         }
-      }
-    );
+      );
 
-    // Handle incoming messages
-    const removeMessageListener = socketService.addMessageListener(
-      (message) => {
+      // Handle incoming messages
+      removeMessageListener = socketService.addMessageListener((message) => {
+        if (!isMounted) return;
+
         // Make sure this message is for this conversation and product
         if (
-          (message.senderId === sellerId || message.receiverId === sellerId) &&
-          (!message.productId || message.productId === product.id)
+          (message.senderId === sellerIdRef.current ||
+            message.receiverId === sellerIdRef.current) &&
+          (!message.productId || message.productId === productIdRef.current)
         ) {
           setMessages((prevMessages) => {
             // Check if message already exists to prevent duplicates
@@ -71,14 +178,17 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
                 m._id === message._id ||
                 (m.content === message.content &&
                   m.senderId === message.senderId &&
-                  m.timestamp === message.timestamp)
+                  Math.abs(
+                    new Date(m.timestamp || m.createdAt) -
+                      new Date(message.timestamp || message.createdAt)
+                  ) < 1000)
             );
             if (exists) return prevMessages;
             return [...prevMessages, message];
           });
 
           // Mark message as read if it's to the current user
-          if (message.receiverId === currentUser.id && message._id) {
+          if (message.receiverId === currentUserRef.current.id && message._id) {
             fetch(`http://localhost:9999/messages/${message._id}/read`, {
               method: "PATCH",
               headers: {
@@ -89,96 +199,50 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
             );
           }
         }
-      }
-    );
+      });
 
-    // Handle typing indicators
-    const removeTypingListener = socketService.addTypingListener(
-      (data, isTyping) => {
-        if (
-          data.userId === sellerId &&
-          (!data.productId || data.productId === product.id)
-        ) {
-          setIsSellerTyping(isTyping);
-        }
-      }
-    );
+      // Handle typing indicators
+      removeTypingListener = socketService.addTypingListener(
+        (data, isTyping) => {
+          if (!isMounted) return;
 
-    // Fetch seller info
-    const fetchSellerInfo = async () => {
-      try {
-        const response = await fetch(`http://localhost:9999/users/${sellerId}`);
-        if (response.ok) {
-          const data = await response.json();
-          setSellerInfo(data);
-        }
-      } catch (err) {
-        console.error("Error fetching seller info:", err);
-      }
-    };
-
-    fetchSellerInfo();
-
-    // Fetch conversation history
-    const fetchMessages = async () => {
-      setIsLoadingHistory(true);
-      try {
-        const response = await fetch(
-          `http://localhost:9999/messages/conversation/${currentUser.id}/${sellerId}?productId=${product.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
+          if (
+            data.userId === sellerIdRef.current &&
+            (!data.productId || data.productId === productIdRef.current)
+          ) {
+            setIsSellerTyping(isTyping);
           }
-        );
-        if (!response.ok) throw new Error("Failed to fetch messages");
-
-        const data = await response.json();
-        setMessages(data);
-
-        // Mark unread messages as read
-        const unreadMessages = data.filter(
-          (msg) => !msg.read && msg.senderId === sellerId
-        );
-
-        if (unreadMessages.length > 0) {
-          const markReadPromises = unreadMessages.map((msg) =>
-            fetch(`http://localhost:9999/messages/${msg._id}/read`, {
-              method: "PATCH",
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            })
-          );
-
-          await Promise.all(markReadPromises);
         }
-
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching messages:", err);
-        setError("Failed to load message history.");
-      } finally {
-        setIsLoadingHistory(false);
-      }
+      );
     };
 
-    fetchMessages();
+    // Fetch data only once when opening chat
+    if (!initialDataLoaded) {
+      Promise.all([fetchSellerInfo(), fetchMessages()]);
+    }
+
+    setupSocket();
 
     // Clean up listeners
     return () => {
+      isMounted = false;
       removeConnectionListener();
       removeMessageListener();
       removeTypingListener();
+
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+        fetchTimeoutRef.current = null;
+      }
     };
-  }, [isOpen, currentUser, sellerId, product.id]);
+  }, [isOpen, fetchMessages, fetchSellerInfo, initialDataLoaded]);
 
   // Scroll to bottom whenever messages change
   useEffect(() => {
     if (messages.length > 0) {
       scrollToBottom();
     }
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   // Monitor scroll position to show "scroll to bottom" button
   useEffect(() => {
@@ -206,20 +270,25 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!message.trim() || !currentUser || !isSocketConnected) return;
+    if (!message.trim() || !currentUserRef.current || !isSocketConnected)
+      return;
 
     // Send message via socket
     const sent = socketService.sendMessage(
-      currentUser.id,
-      sellerId,
+      currentUserRef.current.id,
+      sellerIdRef.current,
       message.trim(),
-      product.id
+      productIdRef.current
     );
 
     if (sent) {
       setMessage("");
       // Signal that user stopped typing
-      socketService.sendStopTyping(currentUser.id, sellerId, product.id);
+      socketService.sendStopTyping(
+        currentUserRef.current.id,
+        sellerIdRef.current,
+        productIdRef.current
+      );
     } else {
       setError("Failed to send message. Please check your connection.");
     }
@@ -234,11 +303,19 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
     if (typingTimeout) clearTimeout(typingTimeout);
 
     // Send typing indicator
-    socketService.sendTyping(currentUser.id, sellerId, product.id);
+    socketService.sendTyping(
+      currentUserRef.current.id,
+      sellerIdRef.current,
+      productIdRef.current
+    );
 
     // Set timeout to stop typing indicator after 2 seconds of inactivity
     const timeout = setTimeout(() => {
-      socketService.sendStopTyping(currentUser.id, sellerId, product.id);
+      socketService.sendStopTyping(
+        currentUserRef.current.id,
+        sellerIdRef.current,
+        productIdRef.current
+      );
     }, 2000);
 
     setTypingTimeout(timeout);
@@ -311,6 +388,8 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
 
     return groups;
   };
+
+  const currentUser = currentUserRef.current;
 
   if (!currentUser) {
     return (
@@ -463,7 +542,7 @@ const ProductChat = ({ product, sellerId, sellerName }) => {
 
                           return (
                             <div
-                              key={msg._id || index}
+                              key={msg._id || `temp-${index}`}
                               className={`mb-3 flex ${
                                 isFromCurrentUser
                                   ? "justify-end"

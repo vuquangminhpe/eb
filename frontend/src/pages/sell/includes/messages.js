@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   FiSearch,
@@ -18,109 +18,293 @@ const Messages = () => {
   const [activeConversation, setActiveConversation] = useState(null);
   const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isSocketConnected, setIsSocketConnected] = useState(false);
   const [userTyping, setUserTyping] = useState({});
   const [typingTimeout, setTypingTimeout] = useState(null);
   const [filter, setFilter] = useState("all"); // all, products, unread
+  const [initialDataLoaded, setInitialDataLoaded] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  // Refs để tránh re-render không cần thiết
+  const currentUserRef = useRef(
+    JSON.parse(localStorage.getItem("currentUser"))
+  );
+  const messagesRef = useRef(messages);
+  const conversationsRef = useRef(conversations);
+  const activeConversationRef = useRef(activeConversation);
+
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const fetchTimeoutRef = useRef(null);
+  const refreshTimerRef = useRef(null);
+
+  // Cập nhật refs khi state thay đổi
+  useEffect(() => {
+    messagesRef.current = messages;
+    conversationsRef.current = conversations;
+    activeConversationRef.current = activeConversation;
+  }, [messages, conversations, activeConversation]);
 
   // Scroll to bottom of messages
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
-  // Fetch all conversations
-  useEffect(() => {
-    if (!currentUser) return;
+  // Memoized function để fetch conversations
+  const fetchConversations = useCallback(
+    async (forceRefresh = false) => {
+      if (!currentUserRef.current) return;
 
-    const fetchConversations = async () => {
-      setLoading(true);
+      // Tránh refreshing liên tục
+      if (isRefreshing && !forceRefresh) return;
+
+      // Nếu là lần đầu fetch, set loading
+      if (conversations.length === 0 && !isRefreshing) {
+        setLoading(true);
+      }
+
+      if (forceRefresh) {
+        setIsRefreshing(true);
+      }
+
       try {
-        const response = await fetch(
-          `http://localhost:9999/messages/conversations/${currentUser.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-
-        if (!response.ok) throw new Error("Failed to fetch conversations");
-
-        const data = await response.json();
-        setConversations(data);
-
-        // If there's an active conversation, make sure it's still in the list
-        if (activeConversation) {
-          const stillExists = data.some(
-            (conv) =>
-              conv.otherUser._id === activeConversation.otherUser._id &&
-              (!conv.product ||
-                !activeConversation.product ||
-                conv.product._id === activeConversation.product._id)
-          );
-
-          if (!stillExists) {
-            setActiveConversation(null);
-            setMessages([]);
-          }
+        // Tránh fetch nhiều lần trong thời gian ngắn
+        if (fetchTimeoutRef.current) {
+          clearTimeout(fetchTimeoutRef.current);
         }
 
-        setError(null);
+        fetchTimeoutRef.current = setTimeout(async () => {
+          const response = await fetch(
+            `http://localhost:9999/messages/conversations/${currentUserRef.current.id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+
+          if (!response.ok) throw new Error("Failed to fetch conversations");
+
+          const data = await response.json();
+
+          // So sánh dữ liệu mới với hiện tại
+          if (
+            JSON.stringify(data) !== JSON.stringify(conversationsRef.current)
+          ) {
+            // Sắp xếp theo thời gian tin nhắn mới nhất
+            const sortedData = [...data].sort((a, b) => {
+              const dateA = new Date(
+                a.latestMessage?.createdAt || a.latestMessage?.timestamp || 0
+              );
+              const dateB = new Date(
+                b.latestMessage?.createdAt || b.latestMessage?.timestamp || 0
+              );
+              return dateB - dateA;
+            });
+
+            setConversations(sortedData);
+
+            // Nếu có active conversation, kiểm tra nó có còn trong danh sách không
+            if (activeConversationRef.current) {
+              const stillExists = sortedData.some(
+                (conv) =>
+                  conv.otherUser._id ===
+                    activeConversationRef.current.otherUser._id &&
+                  (!conv.product ||
+                    !activeConversationRef.current.product ||
+                    conv.product._id ===
+                      activeConversationRef.current.product._id)
+              );
+
+              if (!stillExists) {
+                setActiveConversation(null);
+                setMessages([]);
+              }
+            }
+          }
+
+          setError(null);
+          setInitialDataLoaded(true);
+        }, 300);
       } catch (err) {
         console.error("Error fetching conversations:", err);
         setError("Failed to load conversations. Please try again.");
       } finally {
         setLoading(false);
+        setIsRefreshing(false);
       }
-    };
+    },
+    [conversations.length, isRefreshing]
+  );
 
-    fetchConversations();
+  // Memoized function để fetch messages
+  const fetchMessages = useCallback(async () => {
+    if (!activeConversationRef.current || !currentUserRef.current) return;
 
-    // Refresh conversations every 30 seconds
-    const interval = setInterval(fetchConversations, 30000);
+    setLoading(true);
+    try {
+      const endpoint = `http://localhost:9999/messages/conversation/${currentUserRef.current.id}/${activeConversationRef.current.otherUser._id}`;
+      const url = activeConversationRef.current.product
+        ? `${endpoint}?productId=${activeConversationRef.current.product._id}`
+        : endpoint;
 
-    return () => clearInterval(interval);
-  }, [currentUser, activeConversation]);
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
-  // Handle socket connection and messages
+      if (!response.ok) throw new Error("Failed to fetch messages");
+
+      const data = await response.json();
+
+      // So sánh dữ liệu mới với hiện tại
+      if (JSON.stringify(data) !== JSON.stringify(messagesRef.current)) {
+        setMessages(data);
+      }
+
+      // Mark messages as read
+      const unreadMessages = data.filter(
+        (m) => !m.read && m.receiverId === currentUserRef.current.id
+      );
+
+      if (unreadMessages.length > 0) {
+        // Gộp các request đánh dấu đã đọc
+        await Promise.all(
+          unreadMessages.map((msg) =>
+            fetch(`http://localhost:9999/messages/${msg._id}/read`, {
+              method: "PATCH",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            })
+          )
+        );
+
+        // Cập nhật conversation list để giảm unreadCount
+        setConversations((prev) =>
+          prev.map((conv) => {
+            if (
+              conv.otherUser._id ===
+                activeConversationRef.current.otherUser._id &&
+              (!conv.product ||
+                !activeConversationRef.current.product ||
+                conv.product._id === activeConversationRef.current.product._id)
+            ) {
+              return { ...conv, unreadCount: 0 };
+            }
+            return conv;
+          })
+        );
+      }
+
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+      setError("Failed to load messages. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial data fetching
   useEffect(() => {
-    if (!currentUser) return;
+    if (!currentUserRef.current) return;
 
-    // Connect socket if not already connected
-    if (!socketService.isConnected()) {
-      socketService.connect(currentUser.id);
+    // Fetch conversations only once on initial load
+    if (!initialDataLoaded) {
+      fetchConversations();
     }
 
-    // Handle connection status changes
-    const removeConnectionListener = socketService.addConnectionListener(
-      (isConnected, error) => {
-        setIsSocketConnected(isConnected);
-        if (!isConnected && error) {
-          setError("Chat connection lost. Please refresh the page.");
-        } else if (isConnected) {
-          setError(null);
-        }
+    // Clean up timers on unmount
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
       }
-    );
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+    };
+  }, [fetchConversations, initialDataLoaded]);
 
-    // Handle incoming messages
-    const removeMessageListener = socketService.addMessageListener(
-      (message) => {
+  // Set up refresh timer after initial data is loaded
+  useEffect(() => {
+    if (initialDataLoaded && currentUserRef.current) {
+      // Reset existing timer if any
+      if (refreshTimerRef.current) {
+        clearInterval(refreshTimerRef.current);
+      }
+
+      // Set up a new refresh interval - 60 seconds instead of 30
+      refreshTimerRef.current = setInterval(() => {
+        fetchConversations(true);
+      }, 60000);
+
+      return () => {
+        if (refreshTimerRef.current) {
+          clearInterval(refreshTimerRef.current);
+        }
+      };
+    }
+  }, [fetchConversations, initialDataLoaded]);
+
+  // Fetch messages when active conversation changes
+  useEffect(() => {
+    if (activeConversation) {
+      fetchMessages();
+
+      // Focus on input field
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  }, [activeConversation, fetchMessages]);
+
+  // Socket connection and event handling
+  useEffect(() => {
+    if (!currentUserRef.current) return;
+
+    let isMounted = true;
+    let removeConnectionListener = () => {};
+    let removeMessageListener = () => {};
+    let removeTypingListener = () => {};
+
+    const setupSocket = async () => {
+      // Connect socket if not already connected
+      await socketService.connect(currentUserRef.current.id);
+
+      if (!isMounted) return;
+
+      // Handle connection status changes
+      removeConnectionListener = socketService.addConnectionListener(
+        (isConnected, error) => {
+          if (!isMounted) return;
+
+          setIsSocketConnected(isConnected);
+          if (!isConnected && error) {
+            setError("Chat connection lost. Please refresh the page.");
+          } else if (isConnected) {
+            setError(null);
+          }
+        }
+      );
+
+      // Handle incoming messages
+      removeMessageListener = socketService.addMessageListener((message) => {
+        if (!isMounted) return;
+
         // Update messages if conversation is active
         if (
-          activeConversation &&
-          (message.senderId === activeConversation.otherUser._id ||
-            message.receiverId === activeConversation.otherUser._id) &&
-          (!activeConversation.product ||
+          activeConversationRef.current &&
+          (message.senderId === activeConversationRef.current.otherUser._id ||
+            message.receiverId ===
+              activeConversationRef.current.otherUser._id) &&
+          (!activeConversationRef.current.product ||
             !message.productId ||
-            message.productId === activeConversation.product._id)
+            message.productId === activeConversationRef.current.product._id)
         ) {
           setMessages((prevMessages) => {
             // Check if message already exists to prevent duplicates
@@ -129,14 +313,17 @@ const Messages = () => {
                 m._id === message._id ||
                 (m.content === message.content &&
                   m.senderId === message.senderId &&
-                  m.timestamp === message.timestamp)
+                  Math.abs(
+                    new Date(m.timestamp || m.createdAt) -
+                      new Date(message.timestamp || message.createdAt)
+                  ) < 1000)
             );
             if (exists) return prevMessages;
             return [...prevMessages, message];
           });
 
           // Mark message as read if it's to the current user
-          if (message.receiverId === currentUser.id) {
+          if (message.receiverId === currentUserRef.current.id && message._id) {
             fetch(`http://localhost:9999/messages/${message._id}/read`, {
               method: "PATCH",
               headers: {
@@ -148,13 +335,15 @@ const Messages = () => {
           }
         }
 
-        // Update conversation list
+        // Update conversation list efficiently
         setConversations((prevConversations) => {
           const otherUserId =
-            message.senderId === currentUser.id
+            message.senderId === currentUserRef.current.id
               ? message.receiverId
               : message.senderId;
+
           const updatedConversations = [...prevConversations];
+          let needsUpdate = false;
 
           // Find if conversation exists
           const conversationIndex = updatedConversations.findIndex(
@@ -166,153 +355,125 @@ const Messages = () => {
           );
 
           if (conversationIndex >= 0) {
-            // Update existing conversation
-            updatedConversations[conversationIndex] = {
-              ...updatedConversations[conversationIndex],
-              latestMessage: message,
-              unreadCount:
-                message.senderId === currentUser.id
-                  ? 0
-                  : (updatedConversations[conversationIndex].unreadCount || 0) +
-                    1,
-            };
+            // Only update if the message is newer
+            const currentLatestDate = new Date(
+              updatedConversations[conversationIndex].latestMessage
+                ?.createdAt ||
+                updatedConversations[conversationIndex].latestMessage
+                  ?.timestamp ||
+                0
+            );
+            const newMessageDate = new Date(
+              message.createdAt || message.timestamp
+            );
+
+            if (newMessageDate > currentLatestDate) {
+              // Update existing conversation
+              updatedConversations[conversationIndex] = {
+                ...updatedConversations[conversationIndex],
+                latestMessage: message,
+                unreadCount:
+                  message.senderId === currentUserRef.current.id
+                    ? 0
+                    : // Only increment unread count if not in active conversation
+                      activeConversationRef.current &&
+                      activeConversationRef.current.otherUser._id ===
+                        otherUserId &&
+                      (!activeConversationRef.current.product ||
+                        !message.productId ||
+                        activeConversationRef.current.product._id ===
+                          message.productId)
+                    ? 0
+                    : (updatedConversations[conversationIndex].unreadCount ||
+                        0) + 1,
+              };
+              needsUpdate = true;
+            }
           } else {
             // Create new conversation entry
             updatedConversations.push({
               otherUser: { _id: otherUserId, username: "User" }, // Basic info, will be updated on next refresh
               product: message.productId ? { _id: message.productId } : null,
               latestMessage: message,
-              unreadCount: message.senderId === currentUser.id ? 0 : 1,
+              unreadCount:
+                message.senderId === currentUserRef.current.id ? 0 : 1,
+            });
+            needsUpdate = true;
+          }
+
+          // Only sort and return updated array if changes were made
+          if (needsUpdate) {
+            // Sort by latest message
+            return updatedConversations.sort((a, b) => {
+              const dateA = new Date(
+                a.latestMessage?.createdAt || a.latestMessage?.timestamp || 0
+              );
+              const dateB = new Date(
+                b.latestMessage?.createdAt || b.latestMessage?.timestamp || 0
+              );
+              return dateB - dateA;
             });
           }
 
-          // Sort by latest message
-          return updatedConversations.sort((a, b) => {
-            const dateA = new Date(
-              a.latestMessage?.createdAt || a.latestMessage?.timestamp || 0
-            );
-            const dateB = new Date(
-              b.latestMessage?.createdAt || b.latestMessage?.timestamp || 0
-            );
-            return dateB - dateA;
-          });
+          return prevConversations;
         });
-      }
-    );
+      });
 
-    // Handle typing indicators
-    const removeTypingListener = socketService.addTypingListener(
-      (data, isTyping) => {
-        setUserTyping((prev) => ({
-          ...prev,
-          [data.userId]: isTyping
-            ? { isTyping, productId: data.productId, timestamp: Date.now() }
-            : undefined,
-        }));
-      }
-    );
+      // Handle typing indicators
+      removeTypingListener = socketService.addTypingListener(
+        (data, isTyping) => {
+          if (!isMounted) return;
 
+          setUserTyping((prev) => {
+            // Nếu không thay đổi trạng thái, không cập nhật state
+            if (prev[data.userId]?.isTyping === isTyping) {
+              return prev;
+            }
+
+            return {
+              ...prev,
+              [data.userId]: isTyping
+                ? { isTyping, productId: data.productId, timestamp: Date.now() }
+                : undefined,
+            };
+          });
+        }
+      );
+    };
+
+    setupSocket();
+
+    // Clean up listeners on unmount
     return () => {
+      isMounted = false;
       removeConnectionListener();
       removeMessageListener();
       removeTypingListener();
     };
-  }, [currentUser, activeConversation]);
-
-  // Fetch messages when active conversation changes
-  useEffect(() => {
-    if (!activeConversation || !currentUser) return;
-
-    const fetchMessages = async () => {
-      setLoading(true);
-      try {
-        const endpoint = `http://localhost:9999/messages/conversation/${currentUser.id}/${activeConversation.otherUser._id}`;
-        const url = activeConversation.product
-          ? `${endpoint}?productId=${activeConversation.product._id}`
-          : endpoint;
-
-        const response = await fetch(url, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch messages");
-
-        const data = await response.json();
-        setMessages(data);
-
-        // Mark messages as read
-        const unreadMessages = data.filter(
-          (m) => !m.read && m.receiverId === currentUser.id
-        );
-        if (unreadMessages.length > 0) {
-          await Promise.all(
-            unreadMessages.map((msg) =>
-              fetch(`http://localhost:9999/messages/${msg._id}/read`, {
-                method: "PATCH",
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-              })
-            )
-          );
-
-          // Update conversation list
-          setConversations((prev) =>
-            prev.map((conv) => {
-              if (
-                conv.otherUser._id === activeConversation.otherUser._id &&
-                (!conv.product ||
-                  !activeConversation.product ||
-                  conv.product._id === activeConversation.product._id)
-              ) {
-                return { ...conv, unreadCount: 0 };
-              }
-              return conv;
-            })
-          );
-        }
-
-        setError(null);
-      } catch (err) {
-        console.error("Error fetching messages:", err);
-        setError("Failed to load messages. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMessages();
-
-    // Focus on input field
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, [activeConversation, currentUser]);
+  }, []);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
   // Handle sending a message
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (
       !message.trim() ||
-      !currentUser ||
-      !activeConversation ||
+      !currentUserRef.current ||
+      !activeConversationRef.current ||
       !isSocketConnected
     )
       return;
 
-    const productId = activeConversation.product?._id;
+    const productId = activeConversationRef.current.product?._id;
 
     // Send message via socket
     const sent = socketService.sendMessage(
-      currentUser.id,
-      activeConversation.otherUser._id,
+      currentUserRef.current.id,
+      activeConversationRef.current.otherUser._id,
       message.trim(),
       productId
     );
@@ -321,8 +482,8 @@ const Messages = () => {
       setMessage("");
       // Clear typing indicator
       socketService.sendStopTyping(
-        currentUser.id,
-        activeConversation.otherUser._id,
+        currentUserRef.current.id,
+        activeConversationRef.current.otherUser._id,
         productId
       );
     } else {
@@ -334,24 +495,24 @@ const Messages = () => {
   const handleTyping = (e) => {
     setMessage(e.target.value);
 
-    if (!isSocketConnected || !activeConversation) return;
+    if (!isSocketConnected || !activeConversationRef.current) return;
 
     // Clear existing timeout
     if (typingTimeout) clearTimeout(typingTimeout);
 
     // Send typing indicator
     socketService.sendTyping(
-      currentUser.id,
-      activeConversation.otherUser._id,
-      activeConversation.product?._id
+      currentUserRef.current.id,
+      activeConversationRef.current.otherUser._id,
+      activeConversationRef.current.product?._id
     );
 
     // Set timeout to stop typing indicator after 2 seconds of inactivity
     const timeout = setTimeout(() => {
       socketService.sendStopTyping(
-        currentUser.id,
-        activeConversation.otherUser._id,
-        activeConversation.product?._id
+        currentUserRef.current.id,
+        activeConversationRef.current.otherUser._id,
+        activeConversationRef.current.product?._id
       );
     }, 2000);
 
@@ -396,6 +557,9 @@ const Messages = () => {
         .includes(searchTerm.toLowerCase()) ||
       (conv.product?.title || "")
         .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      (conv.latestMessage?.content || "")
+        .toLowerCase()
         .includes(searchTerm.toLowerCase());
 
     // Apply filter
@@ -416,7 +580,15 @@ const Messages = () => {
       userTyping[activeConversation.otherUser._id]?.productId ===
         activeConversation.product._id);
 
-  if (!currentUser) {
+  // Handle manual refresh
+  const handleManualRefresh = () => {
+    fetchConversations(true);
+    if (activeConversation) {
+      fetchMessages();
+    }
+  };
+
+  if (!currentUserRef.current) {
     return (
       <div className="flex justify-center items-center h-full">
         <div className="text-center p-8">
@@ -444,7 +616,19 @@ const Messages = () => {
         {/* Conversation List */}
         <div className="w-1/3 border-r border-gray-200 flex flex-col">
           <div className="p-4 border-b border-gray-200">
-            <h2 className="font-semibold text-lg mb-2">Messages</h2>
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="font-semibold text-lg">Messages</h2>
+              <button
+                onClick={handleManualRefresh}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full"
+                disabled={isRefreshing}
+                title="Refresh messages"
+              >
+                <FiRefreshCw
+                  className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+              </button>
+            </div>
 
             {/* Search and filters */}
             <div className="space-y-2">
@@ -514,71 +698,76 @@ const Messages = () => {
                   : "No messages found."}
               </div>
             ) : (
-              filteredConversations.map((conv, index) => (
-                <div
-                  key={`${conv.otherUser?._id}-${
-                    conv.product?._id || "noproduct"
-                  }`}
-                  onClick={() => setActiveConversation(conv)}
-                  className={`p-3 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${
-                    activeConversation?.otherUser?._id ===
-                      conv.otherUser?._id &&
-                    (!activeConversation?.product ||
-                      !conv.product ||
-                      activeConversation?.product?._id === conv.product?._id)
-                      ? "bg-blue-50"
-                      : ""
-                  }`}
-                >
-                  <div className="flex items-start">
-                    <div className="mr-3 relative">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
-                        {(conv.otherUser?.username ||
-                          conv.otherUser?.fullname ||
-                          "?")[0].toUpperCase()}
-                      </div>
-                      {conv.unreadCount > 0 && (
-                        <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                          {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-grow min-w-0">
-                      <div className="flex justify-between items-baseline">
-                        <h3 className="font-medium text-gray-900 truncate">
-                          {conv.otherUser?.fullname ||
-                            conv.otherUser?.username ||
-                            "User"}
-                        </h3>
-                        <span className="text-xs text-gray-500 ml-1 whitespace-nowrap">
-                          {formatMessageTime(
-                            conv.latestMessage?.createdAt ||
-                              conv.latestMessage?.timestamp
-                          )}
-                        </span>
-                      </div>
+              filteredConversations.map((conv) => {
+                const convKey = `${conv.otherUser?._id}-${
+                  conv.product?._id || "noproduct"
+                }`;
 
-                      {/* Product info if present */}
-                      {conv.product && (
-                        <div className="flex items-center text-xs text-gray-600 mt-1">
-                          <FiPackage className="mr-1 h-3 w-3" />
-                          <span className="truncate">
-                            Re: {conv.product.title || "Product"}
+                return (
+                  <div
+                    key={convKey}
+                    onClick={() => setActiveConversation(conv)}
+                    className={`p-3 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${
+                      activeConversation?.otherUser?._id ===
+                        conv.otherUser?._id &&
+                      (!activeConversation?.product ||
+                        !conv.product ||
+                        activeConversation?.product?._id === conv.product?._id)
+                        ? "bg-blue-50"
+                        : ""
+                    }`}
+                  >
+                    <div className="flex items-start">
+                      <div className="mr-3 relative">
+                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold">
+                          {(conv.otherUser?.username ||
+                            conv.otherUser?.fullname ||
+                            "?")[0].toUpperCase()}
+                        </div>
+                        {conv.unreadCount > 0 && (
+                          <div className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                            {conv.unreadCount > 9 ? "9+" : conv.unreadCount}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-grow min-w-0">
+                        <div className="flex justify-between items-baseline">
+                          <h3 className="font-medium text-gray-900 truncate">
+                            {conv.otherUser?.fullname ||
+                              conv.otherUser?.username ||
+                              "User"}
+                          </h3>
+                          <span className="text-xs text-gray-500 ml-1 whitespace-nowrap">
+                            {formatMessageTime(
+                              conv.latestMessage?.createdAt ||
+                                conv.latestMessage?.timestamp
+                            )}
                           </span>
                         </div>
-                      )}
 
-                      {/* Latest message */}
-                      <p className="text-sm text-gray-600 truncate mt-1">
-                        {conv.latestMessage?.senderId === currentUser.id
-                          ? "You: "
-                          : ""}
-                        {conv.latestMessage?.content || "No messages yet"}
-                      </p>
+                        {/* Product info if present */}
+                        {conv.product && (
+                          <div className="flex items-center text-xs text-gray-600 mt-1">
+                            <FiPackage className="mr-1 h-3 w-3" />
+                            <span className="truncate">
+                              Re: {conv.product.title || "Product"}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Latest message */}
+                        <p className="text-sm text-gray-600 truncate mt-1">
+                          {conv.latestMessage?.senderId ===
+                          currentUserRef.current.id
+                            ? "You: "
+                            : ""}
+                          {conv.latestMessage?.content || "No messages yet"}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
@@ -684,7 +873,7 @@ const Messages = () => {
 
               {/* Messages */}
               <div className="flex-grow overflow-y-auto p-4 bg-gray-50">
-                {loading ? (
+                {loading && messages.length === 0 ? (
                   <div className="flex justify-center items-center h-32">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   </div>
@@ -714,10 +903,11 @@ const Messages = () => {
                 ) : (
                   <div className="space-y-3">
                     {messages.map((msg, index) => {
-                      const isFromCurrentUser = msg.senderId === currentUser.id;
+                      const isFromCurrentUser =
+                        msg.senderId === currentUserRef.current.id;
                       return (
                         <div
-                          key={msg._id || index}
+                          key={msg._id || `temp-${index}`}
                           className={`flex ${
                             isFromCurrentUser ? "justify-end" : "justify-start"
                           }`}
